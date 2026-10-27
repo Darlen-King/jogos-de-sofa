@@ -1,0 +1,64 @@
+/* Jogos de Sofá — base compartilhada por todos os jogos.
+   Visual: mesa de jogo escura, peças e cartas claras. Um tema só, de propósito. */
+:root {
+  color-scheme: dark;
+  --mesa: #1b2433; --mesa-2: #243047; --mesa-3: #2d3a55; --linha: #34425e;
+  --papel: #fbf3e4; --tinta: #1d2330; --apagado: #9aa7c2; --texto: #eef1f8;
+  --red: #e2483d; --green: #2fa65a; --yellow: #f2c230; --blue: #2f7fe0;
+  --alerta: #ff6b5e; --ok: #4ade80; --super: #b78bff;
+  --titulo: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --corpo: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--mesa); color: var(--texto); font-family: var(--corpo); font-size: 16px;
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3 { font-family: var(--titulo); margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0; line-height: 1.45; }
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; border-radius: 14px; touch-action: manipulation; }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: .4; }
+.tela { min-height: 100%; padding-block: 20px; }
+.btn { background: var(--texto); color: var(--tinta); padding: 14px 18px; font-weight: 800; }
+.btn.vazado { background: transparent; border: 2px solid var(--linha); color: var(--texto); }
+.btn.grande { font: 700 22px var(--titulo); padding: 18px 26px; border-radius: 18px; }
+.aviso { font-size: 14px; color: var(--apagado); }
+.erro { color: #ffb4ab; }
+.cores4 { display: flex; gap: 8px; }
+.cores4 span { width: 22px; height: 22px; border-radius: 50%; }
+.voltar { display: inline-flex; gap: 6px; align-items: center; color: var(--apagado); text-decoration: none; font-weight: 700; font-size: 14px; }
+.voltar:hover { color: var(--texto); }
+
+/* ---------- home ---------- */
+.home { max-width: 980px; margin: 0 auto; display: grid; gap: 36px; padding-block: 48px; }
+.home-topo { display: grid; gap: 14px; }
+.home-topo h1 { font-size: clamp(44px, 8vw, 76px); line-height: 1; }
+.home-topo p { color: var(--apagado); max-width: 52ch; font-size: 18px; }
+.jogos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.jogo { background: var(--mesa-2); border: 2px solid var(--linha); border-radius: 22px; padding: 20px; display: grid; gap: 12px; text-decoration: none; color: inherit; align-content: start; }
+a.jogo:hover { border-color: var(--apagado); transform: translateY(-2px); transition: transform .15s, border-color .15s; }
+.jogo .capa { aspect-ratio: 16 / 10; border-radius: 14px; background: var(--papel); display: grid; place-items: center; overflow: hidden; }
+.jogo h2 { font-size: 26px; }
+.jogo p { color: var(--apagado); font-size: 15px; }
+.jogo .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 99px; background: var(--mesa-3); color: var(--apagado); }
+.tag.super { background: color-mix(in srgb, var(--super) 22%, transparent); color: var(--super); }
+.jogo.breve { opacity: .55; border-style: dashed; }
+.jogo.breve .capa { background: var(--mesa-3); color: var(--apagado); font: 600 20px var(--titulo); }
+
+/* ---------- dado (TV e celular) ---------- */
+.dado { --t: 84px; width: var(--t); height: var(--t); background: var(--papel); border-radius: calc(var(--t) * .22); display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: calc(var(--t) * .15); gap: 2px; box-shadow: inset 0 calc(var(--t) * -.07) 0 rgba(0, 0, 0, .14), 0 8px 24px rgba(0, 0, 0, .3); }
+.dado i { width: calc(var(--t) * .17); height: calc(var(--t) * .17); border-radius: 50%; background: var(--tinta); place-self: center; visibility: hidden; }
+.dado i.on { visibility: visible; }
+.dado.rolando { animation: chacoalha .12s linear infinite; }
+@keyframes chacoalha { 0% { transform: rotate(-12deg) scale(1.04); } 50% { transform: rotate(12deg) scale(.97); } 100% { transform: rotate(-12deg) scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
