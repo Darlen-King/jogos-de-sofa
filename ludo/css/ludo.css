@@ -153,3 +153,30 @@
 .folha-opcoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
 .folha-opcoes button { background: var(--mesa-3); border: 2px solid var(--linha); border-radius: 14px; padding: 16px 8px; font: 700 20px var(--titulo); }
 .aviso-toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--papel); color: var(--tinta); padding: 10px 16px; border-radius: 14px; font-weight: 800; z-index: 11; max-width: calc(100% - 32px); text-align: center; }
+
+/* ---------- guia: o que cada habilidade e poder faz ---------- */
+.guia { position: fixed; inset: 0; z-index: 20; background: rgba(10, 14, 22, .75); display: grid; place-items: center; padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.guia-caixa { background: var(--mesa-2); border-radius: 22px; width: min(680px, 100%); max-height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr); overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.guia-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px 8px; }
+.guia-topo h2 { font-size: 24px; }
+.guia-topo .btn { padding: 8px 14px; }
+.guia-abas { display: flex; gap: 8px; padding: 0 18px 12px; border-bottom: 1px solid var(--linha); }
+.guia-abas button { flex: 1; background: var(--mesa-3); border: 2px solid transparent; padding: 10px 8px; font-weight: 800; border-radius: 12px; }
+.guia-abas button.ativo { border-color: var(--super); color: var(--super); }
+.guia-corpo { overflow-y: auto; padding: 12px 18px 20px; display: grid; gap: 10px; align-content: start; overscroll-behavior: contain; }
+.guia-sec { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--apagado); margin-top: 8px; }
+.guia-item { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; background: var(--mesa); border-radius: 16px; padding: 12px 14px; align-items: start; }
+.guia-item b { font: 600 19px var(--titulo); }
+.guia-item p { font-size: 14.5px; line-height: 1.45; margin-top: 4px; color: var(--texto); }
+.guia-item .guia-resumo { color: var(--super); font-weight: 800; }
+.guia-item .guia-atencao { color: #ffc9a8; }
+.guia-extra { margin-left: 8px; font-size: 13px; font-weight: 800; color: var(--super); white-space: nowrap; }
+.guia-icone { display: grid; place-items: center; min-height: 40px; }
+.guia-sinais { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.4; }
+.guia-nota { font-size: 14.5px; line-height: 1.45; color: var(--apagado); }
+.guia-item:not(:has(.guia-icone svg)) { grid-template-columns: 0 minmax(0, 1fr); gap: 0; }
+.btn-guia { background: color-mix(in srgb, var(--super) 18%, var(--mesa-2)); border: 2px solid color-mix(in srgb, var(--super) 55%, var(--linha)); color: var(--texto); font-weight: 800; padding: 12px 14px; border-radius: 14px; width: 100%; }
+.guia-btn { justify-self: start; color: var(--super); }
+.topo-dir { display: flex; align-items: center; gap: 10px; }
+.ajuda { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--super) 25%, var(--mesa-2)); border: 2px solid var(--super); color: var(--texto); font: 700 18px var(--titulo); }
+.poderes-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
