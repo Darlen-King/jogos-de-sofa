@@ -49,6 +49,8 @@ a.jogo:hover { border-color: var(--apagado); transform: translateY(-2px); transi
 .jogo .tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 99px; background: var(--mesa-3); color: var(--apagado); }
 .tag.super { background: color-mix(in srgb, var(--super) 22%, transparent); color: var(--super); }
+.capa-bomba { background: #3a2030 !important; gap: 4px; grid-auto-flow: column; place-content: center; font-size: 54px; }
+.capa-bomba span:nth-child(2) { transform: rotate(-12deg); }
 .jogo.breve { opacity: .55; border-style: dashed; }
 .jogo.breve .capa { background: var(--mesa-3); color: var(--apagado); font: 600 20px var(--titulo); }
 
