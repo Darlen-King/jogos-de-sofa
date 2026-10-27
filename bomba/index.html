@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b2433">
+  <title>Bomba no Sofá</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="../comum/base.css">
+  <link rel="stylesheet" href="css/bomba.css">
+</head>
+<body>
+
+<!-- ============ INÍCIO (computador/TV) ============ -->
+<section id="inicio" class="tela" hidden>
+  <div class="inicio-card">
+    <a class="voltar" href="../">← Jogos de Sofá</a>
+    <div class="logo" aria-hidden="true">💣<span>🛋️</span></div>
+    <h1>Bomba no Sofá</h1>
+    <p>As cartas ficam no celular de cada um, a mesa fica nesta tela. Compre cartas sem explodir, ataque os outros e grite <b>NÃO!</b> a tempo. O último que sobrar ganha.</p>
+    <div class="linha-btns"><button class="btn grande" id="btn-criar">Criar sala</button><button class="btn vazado" id="btn-guia-inicio" type="button">Como jogar</button></div>
+    <p class="aviso" id="aviso-local" hidden>Você abriu o arquivo direto do computador. O celular só consegue entrar quando o jogo estiver publicado (GitHub Pages) ou servido pela rede. Veja o README.</p>
+  </div>
+</section>
+
+<!-- ============ MESA (computador/TV) ============ -->
+<section id="mesa" class="tela" hidden>
+
+  <!-- sala de espera -->
+  <div id="sala">
+    <div class="qr-card">
+      <span class="rotulo">Aponte a câmera do celular</span>
+      <div class="qr" id="qr"><span class="aviso">Abrindo a sala…</span></div>
+      <span class="rotulo">Sala</span>
+      <span class="codigo" id="codigo">····</span>
+      <span class="link" id="link"></span>
+    </div>
+    <div class="sala-info">
+      <h2>Leia o QR code e digite seu nome</h2>
+      <div class="opcoes-sala">
+        <div class="grupo-opcao">
+          <span class="rotulo-claro">Tempo para dizer “Não!”</span>
+          <div class="tempos" id="reacoes"></div>
+        </div>
+        <div class="grupo-opcao">
+          <span class="rotulo-claro">Tempo por vez</span>
+          <div class="tempos" id="tempos"></div>
+        </div>
+      </div>
+      <div class="lugares" id="lugares"></div>
+      <button class="link-btn guia-btn" id="btn-guia-sala" type="button">Como jogar e o que cada carta faz</button>
+      <div class="linha-btns">
+        <button class="btn grande" id="btn-comecar" disabled>Começar partida</button>
+        <span class="aviso" id="dica-comecar">Precisa de pelo menos 2 jogadores.</span>
+      </div>
+      <p class="aviso" id="status-mesa">Conectando ao servidor de salas…</p>
+    </div>
+  </div>
+
+  <!-- jogo -->
+  <div id="jogo" hidden>
+    <div class="faixa-jogadores" id="faixa"></div>
+    <div class="centro-mesa">
+      <div class="pilhas">
+        <div class="pilha-box">
+          <div class="verso" id="monte"><span class="verso-logo">💣</span><b id="monte-n">0</b></div>
+          <span class="rotulo-claro">Monte</span>
+        </div>
+        <div class="pilha-box">
+          <div id="descarte-topo" class="descarte-vazio"></div>
+          <span class="rotulo-claro">Descarte</span>
+        </div>
+      </div>
+      <div class="lado-mesa">
+        <p class="quem" id="quem"></p>
+        <div class="relogio" id="relogio-mesa" hidden><i></i></div>
+        <p class="msg" id="msg-mesa"></p>
+        <ol class="historico" id="historico"></ol>
+        <div class="qr-mini" id="qr-mini" hidden><div id="qr2"></div><span>Caiu a conexão de alguém? É só ler este QR code de novo com o mesmo celular.</span></div>
+        <div class="linha-btns">
+          <button class="btn vazado" id="btn-qr">Mostrar QR code</button>
+          <button class="btn vazado" id="btn-guia-jogo" type="button">Como jogar</button>
+          <button class="btn vazado" id="btn-nova">Voltar à sala</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- janela do "Não!" -->
+    <div class="reacao" id="reacao" hidden>
+      <div class="reacao-caixa">
+        <div class="reacao-cartas" id="reacao-cartas"></div>
+        <p class="reacao-txt" id="reacao-txt"></p>
+        <ol class="cadeia" id="reacao-cadeia"></ol>
+        <div class="contagem"><b id="reacao-num">5</b><span id="reacao-dica">Alguém tem um Não?</span></div>
+        <div class="relogio grosso" id="reacao-barra"><i></i></div>
+        <p class="estado-jogada" id="reacao-estado"></p>
+      </div>
+    </div>
+
+    <div class="flash" id="flash" hidden><span class="flash-ic" id="flash-ic"></span><b id="flash-txt"></b></div>
+  </div>
+
+  <!-- fim -->
+  <div class="sobreposto" id="fim" hidden>
+    <div class="podio">
+      <span class="trofeu" aria-hidden="true">🏆</span>
+      <h2 id="fim-titulo">Fim de jogo!</h2>
+      <p id="fim-msg"></p>
+      <button class="btn grande" id="btn-denovo" style="background:var(--tinta);color:var(--papel)">Jogar de novo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTROLE (celular) ============ -->
+<section id="controle" class="tela" hidden>
+  <div class="topo"><h2 id="c-titulo">Bomba no Sofá</h2><div class="topo-dir"><span class="status-rede" id="c-rede">Conectando</span><button class="ajuda" id="c-ajuda" type="button" aria-label="Como jogar e o que cada carta faz">?</button></div></div>
+
+  <div id="c-conectando" class="centro">
+    <div class="logo pulsando" aria-hidden="true">💣</div>
+    <p class="msg" id="c-conectando-msg">Entrando na sala…</p>
+  </div>
+
+  <form id="c-nome-form" hidden>
+    <label class="msg" for="c-nome-input">Como você quer aparecer na TV?</label>
+    <input id="c-nome-input" maxlength="12" autocomplete="nickname" placeholder="Seu nome" required>
+    <button class="btn grande" type="submit">Entrar</button>
+    <p class="espera" id="c-nome-aviso"></p>
+  </form>
+
+  <div id="c-assumir" hidden>
+    <p class="msg">A partida já começou. Quer assumir o lugar de alguém que caiu?</p>
+    <div class="lista-btns" id="c-assumir-lista"></div>
+    <p class="espera" id="c-assumir-aviso"></p>
+  </div>
+
+  <div id="c-aguardando" hidden>
+    <div class="cartao-cor" id="c-cartao-sala"><span id="c-modo-sala"></span><h2 id="c-nome-sala"></h2></div>
+    <div class="centro"><p class="msg">Esperando a TV começar a partida…</p><p class="aviso" id="c-qtd"></p></div>
+    <button class="btn-guia" id="c-guia-sala" type="button">Como jogar e o que cada carta faz</button>
+    <div class="linha-btns espalhados"><button class="link-btn" id="c-mudar-nome" type="button">Mudar meu nome</button><button class="link-btn" id="c-sair" type="button">Sair da sala</button></div>
+  </div>
+
+  <div id="c-jogando" hidden>
+    <div class="cartao-cor" id="c-cartao">
+      <div class="cartao-topo"><h2 id="c-nome"></h2><span class="pontos" id="c-turnos" hidden></span></div>
+      <span class="msg" id="c-msg"></span>
+    </div>
+    <div class="relogio" id="relogio-cel" hidden><i></i></div>
+
+    <!-- janela do Não -->
+    <div class="c-reacao" id="c-reacao" hidden>
+      <p class="msg" id="c-reacao-txt"></p>
+      <p class="aviso" id="c-reacao-cadeia"></p>
+      <div class="relogio grosso" id="c-reacao-barra"><i></i></div>
+      <button class="botao-nao" id="c-nao" type="button" hidden>✋ NÃO!</button>
+      <p class="espera" id="c-reacao-espera"></p>
+    </div>
+
+    <!-- escolhas -->
+    <div class="c-espera" id="c-espera" hidden>
+      <p class="msg" id="c-espera-txt"></p>
+      <div class="lista-btns" id="c-espera-opcoes"></div>
+    </div>
+
+    <div class="c-explodiu" id="c-explodiu" hidden><span aria-hidden="true">💥</span><p class="msg">Você explodiu! Acompanhe o resto da partida pela TV.</p></div>
+
+    <div class="c-visao" id="c-visao" hidden><span>Você espiou:</span><div id="c-visao-cartas"></div></div>
+
+    <div class="mao" id="c-mao"></div>
+    <p class="info-selecao" id="c-selecao"></p>
+    <div class="acoes" id="c-acoes">
+      <button class="btn" id="c-jogar" type="button" disabled>Jogar</button>
+      <button class="btn grande comprar" id="c-comprar" type="button" disabled>Comprar carta</button>
+    </div>
+  </div>
+
+  <div id="c-fim" hidden class="centro">
+    <span class="logo" id="c-fim-ic" aria-hidden="true">🏆</span>
+    <h2 id="c-fim-titulo">Fim de jogo!</h2>
+    <p class="msg" id="c-fim-msg"></p>
+    <p class="aviso">Aguarde a TV começar outra partida.</p>
+  </div>
+
+  <div class="folha" id="c-folha" hidden>
+    <div class="folha-caixa">
+      <p class="msg" id="c-folha-titulo"></p>
+      <div class="folha-opcoes" id="c-folha-opcoes"></div>
+      <button class="btn vazado" id="c-folha-cancelar" type="button">Cancelar</button>
+    </div>
+  </div>
+  <div class="aviso-toast" id="c-toast" hidden></div>
+</section>
+
+<!-- ============ GUIA (TV e celular) ============ -->
+<div class="guia" id="guia" hidden role="dialog" aria-modal="true" aria-labelledby="guia-titulo">
+  <div class="guia-caixa">
+    <div class="guia-topo"><h2 id="guia-titulo">Como jogar</h2><button class="btn vazado" id="guia-fechar" type="button">Fechar</button></div>
+    <div class="guia-abas"><button data-aba="regras" type="button">Como jogar</button><button data-aba="cartas" type="button">Cartas</button></div>
+    <div class="guia-corpo" id="guia-corpo"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="../comum/comum.js"></script>
+<script src="js/regras.js"></script>
+<script src="js/cartas.js"></script>
+<script src="js/guia.js"></script>
+<script src="js/mesa.js"></script>
+<script src="js/controle.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
