@@ -228,6 +228,8 @@ const Mesa = (() => {
   $('btn-nova').onclick = voltarSala;
   $('btn-denovo').onclick = voltarSala;
   $('btn-qr').onclick = () => { $('qr-mini').hidden = !$('qr-mini').hidden; $('btn-qr').textContent = $('qr-mini').hidden ? 'Mostrar QR code' : 'Esconder QR code'; };
+  $('btn-guia-sala').onclick = () => Guia.abrir({ aba: 'pinos' });
+  $('btn-guia-jogo').onclick = () => Guia.abrir({ aba: 'pinos' });
   $('btn-rolar-local').onclick = () => { const l = S.lugares[S.vez]; if (l && l.tipo === 'local') rolar(S.vez); };
 
   // modo e tempo (só na sala)
@@ -448,6 +450,7 @@ const Mesa = (() => {
       box.appendChild(v);
     });
     recemChegou = null;
+    $('btn-guia-sala').hidden = S.modo !== 'super';
     const n = L.sentados(S).length;
     $('btn-comecar').disabled = n < L.MIN_JOGADORES;
     $('dica-comecar').textContent = n < L.MIN_JOGADORES
@@ -490,6 +493,7 @@ const Mesa = (() => {
       lista.appendChild(d);
     });
 
+    $('btn-guia-jogo').hidden = !sup;
     const local = S.fase === 'jogo' && S.lugares[vez] && S.lugares[vez].tipo === 'local';
     $('btn-rolar-local').hidden = !local;
     $('btn-rolar-local').disabled = S.rolou;

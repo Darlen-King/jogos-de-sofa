@@ -40,27 +40,44 @@ const Ludo = (() => {
 
   // ---------------- Ludo Super ----------------
   const PODERES = {
-    fuga:       { nome: 'Fuga de pino',       preco: 10, alvo: 'base',   desc: 'Tira um pino da base sem precisar de 6. Você não gira o dado neste turno.' },
-    seguranca:  { nome: 'Ponto de segurança', preco: 10, alvo: 'trilha', desc: 'Leva um pino seu para a casa segura mais próxima atrás dele. Depois você gira normalmente.' },
-    dadoSuper:  { nome: 'Dado super',         preco: 15, escolha: 'categoria', desc: 'Você escolhe: par, ímpar, 1 a 3 ou 4 a 6.' },
-    protecao:   { nome: 'Proteção máxima',    preco: 20, alvo: 'trilha', desc: 'O pino não pode ser capturado enquanto ficar parado.' },
-    retroceder: { nome: 'Retroceder',         preco: 25, desc: 'Gire o dado: um pino anda esse número para trás. Pode capturar.' },
-    buraco:     { nome: 'Buraco negro',       preco: 30, alvo: 'buraco', desc: 'A casa do pino vira um buraco negro que prende quem cair nela.' },
-    dedo:       { nome: 'Dado a dedo',        preco: 40, escolha: 'numero', desc: 'Você escolhe o número do dado. O 6 não dá jogada extra.' },
+    fuga:       { nome: 'Fuga de pino',       preco: 10, alvo: 'base',   detalhe: 'Escolha um pino que está na base: ele vai direto para a casa de saída, sem precisar tirar 6. Em troca, você não gira o dado neste turno e a vez passa.', desc: 'Tira um pino da base sem precisar de 6. Você não gira o dado neste turno.' },
+    seguranca:  { nome: 'Ponto de segurança', preco: 10, alvo: 'trilha', detalhe: 'Escolha um pino seu na trilha: ele volta para a casa segura (estrela ou saída) mais próxima atrás dele, onde ninguém captura. Também tira o pino de dentro de um buraco negro. Depois você ainda gira o dado normalmente.', desc: 'Leva um pino seu para a casa segura mais próxima atrás dele. Depois você gira normalmente.' },
+    dadoSuper:  { nome: 'Dado super',         preco: 15, escolha: 'categoria', detalhe: 'Antes de girar, escolha como o dado vai cair: par (2, 4, 6), ímpar (1, 3, 5), baixo (1 a 3) ou alto (4 a 6). O número sai sorteado dentro do grupo escolhido. Tirar 6 continua dando jogada extra.', desc: 'Você escolhe: par, ímpar, 1 a 3 ou 4 a 6.' },
+    protecao:   { nome: 'Proteção máxima',    preco: 20, alvo: 'trilha', detalhe: 'Escolha um pino seu na trilha: enquanto ele ficar parado, ninguém consegue capturá-lo (quem cair em cima divide a casa). A proteção acaba quando esse pino se mexer. Só um pino protegido por vez.', desc: 'O pino não pode ser capturado enquanto ficar parado.' },
+    retroceder: { nome: 'Retroceder',         preco: 25, detalhe: 'O próximo dado anda para trás: gire normalmente e escolha qual pino volta o número que saiu. Se cair em cima de um adversário, captura. Tirou 6, joga de novo. Não volta para a base e não vale para pino na reta final.', desc: 'Gire o dado: um pino anda esse número para trás. Pode capturar.' },
+    buraco:     { nome: 'Buraco negro',       preco: 30, alvo: 'buraco', detalhe: 'A casa onde está o seu pino vira um buraco negro (não pode ser casa segura). Quem parar nela fica preso — inclusive seus outros pinos, menos o que criou o buraco. Para sair, o dono do pino preso usa rolagens nele até somar 10. Quem sai da casa vizinha ao buraco anda só metade. O buraco some quando o primeiro preso sai.', desc: 'A casa do pino vira um buraco negro que prende quem cair nela.' },
+    dedo:       { nome: 'Dado a dedo',        preco: 40, escolha: 'numero', detalhe: 'Você escolhe exatamente o número que vai sair no dado. Se escolher 6, não ganha jogada extra (só ganha se capturar alguém).', desc: 'Você escolhe o número do dado. O 6 não dá jogada extra.' },
   };
   const CATEGORIAS = { par: [2, 4, 6], impar: [1, 3, 5], baixo: [1, 2, 3], alto: [4, 5, 6] };
   const NOME_CAT = { par: 'par', impar: 'ímpar', baixo: '1 a 3', alto: '4 a 6' };
 
+  // desc = resumo curto; detalhe = explicação completa (aparece no guia); bom/ruim = lado bom e lado ruim
   const HABILIDADES = {
-    normal:    { nome: 'Normal',    desc: 'Sem habilidade.' },
-    corredor:  { nome: 'Corredor',  desc: 'Anda 2 casas a mais em toda jogada.' },
-    tanque:    { nome: 'Tanque',    desc: 'Anda metade, mas aguenta uma captura a cada saída da base.' },
-    vacuo:     { nome: 'Vácuo',     desc: 'Até 6 casas atrás de um adversário, anda de graça 1/3 do que ele andar.' },
-    laco:      { nome: 'Laço',      desc: 'Adversário até 3 casas à frente dele anda 2 a menos.' },
-    ligeiro:   { nome: 'Ligeiro',   desc: 'Sai da base com 5 ou 6.' },
-    banqueiro: { nome: 'Banqueiro', desc: 'Ganha pontos em dobro andando.' },
-    vingativo: { nome: 'Vingativo', desc: 'Quem capturar este pino perde 20 pontos.' },
-    blindado:  { nome: 'Blindado',  desc: 'Imune a Buraco negro e Laço.' },
+    normal: { nome: 'Normal', desc: 'Sem habilidade.',
+      detalhe: 'Anda exatamente o número que sair no dado. Sem vantagem e sem desvantagem.' },
+    corredor: { nome: 'Corredor', desc: 'Anda 2 casas a mais em toda jogada.',
+      detalhe: 'Sempre anda 2 casas a mais que o dado. Exemplo: tirou 3, anda 5.',
+      ruim: 'Continua precisando de 6 para sair da base e do número exato para chegar ao centro — o +2 pode fazer passar do fim.' },
+    tanque: { nome: 'Tanque', desc: 'Anda metade, mas aguenta uma captura a cada saída da base.',
+      detalhe: 'Aguenta uma captura: na primeira vez que alguém cai em cima dele, ele perde o coração ♥ e continua no lugar. Se for capturado de novo, volta para a base. Toda vez que sai da base, ganha o coração de novo.',
+      ruim: 'Anda só metade do dado, arredondando para cima. Exemplo: tirou 5, anda 3.' },
+    vacuo: { nome: 'Vácuo', desc: 'Até 6 casas atrás de um adversário, anda de graça 1/3 do que ele andar.',
+      detalhe: 'Pega carona: se um pino adversário estiver até 6 casas à frente dele e andar, o Vácuo anda de graça 1/3 do que o adversário andou. Exemplo: o adversário andou 6, o Vácuo anda 2. Funciona mesmo fora da sua vez.',
+      ruim: 'Nunca passa na frente de quem está puxando, não captura com essa carona e não funciona se estiver mais de 6 casas atrás.' },
+    laco: { nome: 'Laço', desc: 'Adversário até 3 casas à frente dele anda 2 a menos.',
+      detalhe: 'Segura quem está logo na frente: qualquer pino adversário que esteja até 3 casas à frente do Laço anda 2 casas a menos (no mínimo 1). Ótimo para perseguir alguém.',
+      ruim: 'Não afeta pinos Blindados.' },
+    ligeiro: { nome: 'Ligeiro', desc: 'Sai da base com 5 ou 6.',
+      detalhe: 'Sai da base tirando 5 ou 6 — os outros pinos precisam de 6. Depois de sair, anda normal.' },
+    banqueiro: { nome: 'Banqueiro', desc: 'Ganha pontos em dobro andando.',
+      detalhe: 'Ganha 2 pontos por casa andada em vez de 1. Bom para juntar pontos e comprar poderes.',
+      ruim: 'Não anda mais rápido nem tem proteção.' },
+    vingativo: { nome: 'Vingativo', desc: 'Quem capturar este pino perde 20 pontos.',
+      detalhe: 'Castiga quem captura ele: em vez de ganhar 10 pontos pela captura, o adversário perde 20. Faz os outros pensarem duas vezes antes de atacar.',
+      ruim: 'Volta para a base normalmente quando é capturado.' },
+    blindado: { nome: 'Blindado', desc: 'Imune a Buraco negro e Laço.',
+      detalhe: 'Nunca fica preso em buraco negro, não anda metade perto de um buraco e não é segurado pelo Laço.',
+      ruim: 'Pode ser capturado normalmente.' },
   };
   const PONTOS_CAPTURA = 10, PONTOS_CHEGADA = 50, MULTA_VINGATIVO = 20, CARGA_BURACO = 10;
 

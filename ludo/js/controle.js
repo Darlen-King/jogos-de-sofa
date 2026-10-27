@@ -131,7 +131,19 @@ const Controle = (() => {
     clearTimeout(t._t); t._t = setTimeout(() => (t.hidden = true), 2600);
   }
 
+  /** O que o guia precisa saber deste jogador. */
+  function contextoGuia(aba) {
+    const meu = minhaCor && E;
+    const precos = meu && E.fase === 'jogo' ? Object.fromEntries(Object.keys(L.PODERES).map((k) => [k, L.preco(E, minhaCor, k)])) : null;
+    return { aba, cor: meu ? minhaCor : null, habil: meu ? E.habil[minhaCor] : null, precos };
+  }
+  $('c-ajuda').onclick = () => Guia.abrir(contextoGuia('pinos'));
+  $('c-guia-sel').onclick = () => Guia.abrir(contextoGuia('pinos'));
+  $('c-guia-pinos').onclick = () => Guia.abrir(contextoGuia('pinos'));
+  $('c-guia-poderes').onclick = () => Guia.abrir(contextoGuia('poderes'));
+
   function render() {
+    $('c-ajuda').hidden = !(E && E.modo === 'super');
     if (!E) return ver('c-conectando');
     if (!minhaCor && !nomeConfirmado) return renderNome();
     if (!minhaCor) return renderEscolher();
@@ -279,6 +291,8 @@ const Controle = (() => {
       };
       box.appendChild(b);
     });
+
+    $('c-guia-pinos').hidden = !sup;
 
     // poderes
     $('c-poderes-box').hidden = !sup;
