@@ -50,6 +50,17 @@ Tudo do Clássico, mais:
 
 Ordem dos ajustes no movimento: Tanque (metade) → Corredor (+2) → Laço (−2) → vizinho de buraco negro (metade) → no mínimo 1 casa.
 
+## Bomba no Sofá
+Jogo de cartas de 2 a 5 jogadores, inspirado nos jogos de "batata quente" com bombas, com cartas e desenhos próprios. Cada um vê a própria mão no celular; a TV mostra a mesa.
+
+- Todo mundo começa com 7 cartas + 1 **Desarmar**. O monte tem uma **Bomba** a menos que o número de jogadores.
+- Na sua vez, jogue quantas cartas quiser e termine **comprando** uma. Comprou Bomba sem Desarmar? Explodiu. O último que sobrar ganha.
+- Cartas: Ataque, Pular, Favor, Embaralhar, Espiar o futuro, Não!, Desarmar e as de sofá (Pipoca, Chinelo, Controle, Meia, Ursinho).
+- Combos: 2 iguais (rouba carta aleatória), 3 iguais (pede uma carta pelo nome), 5 diferentes (pega do descarte).
+- **Janela do Não!**: cada carta jogada abre uma contagem (3, 5 ou 8 s, escolhida na sala). Quem tem Não vê um botão grande no celular; quem não tem só vê a contagem. Cada Não recomeça a contagem e também pode ser negado.
+- Tempo por vez opcional (30/60/90 s): se acabar, o jogo compra por você.
+- O celular nunca recebe as mãos dos outros nem a ordem do monte.
+
 ## Como funciona
 O GitHub Pages só hospeda arquivos. A conversa entre a TV e os celulares usa **WebRTC** com a biblioteca [PeerJS](https://peerjs.com): a TV se registra no servidor gratuito do PeerJS e o celular se conecta direto a ela. A TV é quem manda: guarda o estado, aplica as regras e controla o tempo. O celular só faz pedidos (sentar, girar, mover, usar poder), e a TV confere se pode.
 
@@ -66,10 +77,12 @@ ludo/js/mesa.js       tabuleiro: rede, tempo, desenho e animações
 ludo/js/controle.js   celular: rede, vibração, poderes e habilidades
 ludo/js/app.js        decide se a página é tabuleiro ou controle
 ludo/testes/          testes das regras
+bomba/                mesma organização para o Bomba no Sofá (regras.js, cartas.js, guia.js, mesa.js, controle.js)
 ```
 
 ## Testar
-- Regras: `node ludo/testes/regras.test.js`
+- Regras: `node ludo/testes/regras.test.js` e `node bomba/testes/regras.test.js`
+- Várias abas de celular no mesmo navegador (Bomba): acrescente `&eu=2`, `&eu=3`… ao link da sala.
 - Sem celular: abra `ludo/?teste`. Aparece **Adicionar jogador local** em cada cor, e dá para jogar pelo mouse.
 - No computador: `python3 -m http.server 8080` na pasta. Para o celular entrar, use o IP do computador (ex.: `http://192.168.0.10:8080`).
 - Servidor PeerJS próprio (opcional): `npx peerjs --port 9000` e abra o tabuleiro com `?servidor=IP:9000`.
