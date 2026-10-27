@@ -1,69 +1,78 @@
-# Ludo de Sofá
+# Jogos de Sofá
 
-Ludo para jogar em grupo: o **tabuleiro** fica no computador ou na TV, e cada jogador usa o **próprio celular como controle**. O celular entra lendo um QR code.
+Jogos para a turma: o jogo aparece na TV ou no computador e cada pessoa joga pelo **próprio celular**, lendo um QR code. Sem instalar nada.
 
-## Como jogar
+Site: https://darlen-king.github.io/jogos-de-sofa/
 
-1. No computador/TV, abra o site e clique em **Criar sala**. Aparece um QR code e o número da sala.
-2. Cada jogador aponta a câmera do celular para o QR code, abre o link e escolhe uma cor.
-3. O celular fica esperando na sala. Com **2 jogadores ou mais**, o botão **Começar partida** é liberado no tabuleiro.
-4. Na sua vez, o celular vibra: toque no **dado** (no meio da tela) e depois escolha qual **pino (1 a 4)** vai andar.
-5. O tabuleiro mostra tudo: o dado girando, os pinos andando casa por casa e as capturas.
+## Ludo
 
-Regras: só sai da base com 6; tirar 6, capturar ou chegar com um pino dá outra jogada; as casas de saída e as estrelas são seguras; para chegar ao centro precisa do número exato.
+1. No computador/TV, abra **Ludo** e clique em **Criar sala**.
+2. Escolha o modo (**Clássico** ou **Super**) e o tempo por jogada (15 s, 30 s, 60 s ou sem tempo).
+3. Cada jogador lê o QR code, digita o nome e escolhe uma cor. No Super, escolhe também a habilidade de cada pino.
+4. Com **2 jogadores ou mais**, clique em **Começar partida**.
+5. Na sua vez o celular vibra (no iPhone, a tela pisca e toca um som): toque no dado e escolha o pino. O pino que pode capturar alguém aparece com o selo **Captura!**.
+6. Se o tempo acabar, o dado gira sozinho e anda o pino mais à frente. Perto do fim do tempo o celular vibra cada vez mais rápido.
 
-Se um celular cair (tela bloqueou, saiu do Wi-Fi), é só abrir o link de novo **no mesmo celular**: ele volta para a mesma cor. No tabuleiro, o botão **Mostrar QR code** mostra o QR durante a partida.
+### Regras do Clássico
+- Só sai da base com 6. Tirar 6, capturar ou levar um pino ao fim dá outra jogada.
+- Casas de saída e estrelas são seguras. Para chegar ao centro precisa do número exato.
+- Três 6 seguidos: os dois primeiros valem, o terceiro é anulado e a vez passa.
 
-## Publicar no GitHub Pages (sem precisar de servidor)
+### Ludo Super
+Tudo do Clássico, mais:
+- **Bloqueio:** dois pinos da mesma cor na mesma casa não podem ser capturados (o adversário pode passar ou parar ali).
+- **Pontos:** +1 por casa nova andada, +10 por captura, +50 por pino que chega. Servem para comprar poderes; quem vence ainda é quem leva os 4 pinos primeiro.
+- **Poderes** (1 por turno, antes de girar; o preço dobra a cada uso daquele poder):
 
-1. Crie um repositório no GitHub, por exemplo `ludo-de-sofa` (público).
-2. Envie os arquivos desta pasta para o repositório:
-   - pelo site: **Add file → Upload files**, arraste o conteúdo da pasta (o `index.html` tem que ficar na raiz) e clique em **Commit changes**; ou
-   - pelo terminal:
-     ```bash
-     git init
-     git add .
-     git commit -m "Ludo de Sofá"
-     git branch -M main
-     git remote add origin https://github.com/SEU_USUARIO/ludo-de-sofa.git
-     git push -u origin main
-     ```
-3. No repositório: **Settings → Pages → Build and deployment → Source: Deploy from a branch**, escolha **main** e pasta **/ (root)**, e salve.
-4. Em 1 ou 2 minutos o jogo fica em `https://SEU_USUARIO.github.io/ludo-de-sofa/`.
+| Poder | Preço inicial | O que faz |
+|---|---|---|
+| Fuga de pino | 10 | Tira um pino da base sem 6; você não gira neste turno |
+| Ponto de segurança | 10 | Leva um pino seu para a casa segura mais próxima atrás dele (também solta do buraco negro) |
+| Dado super | 15 | O dado cai só em par, ímpar, 1–3 ou 4–6 |
+| Proteção máxima | 20 | O pino não é capturado enquanto ficar parado |
+| Retroceder | 25 | O dado anda para trás; pode capturar; 6 joga de novo |
+| Buraco negro | 30 | A casa do pino prende quem cair (sai somando 10 no dado); vizinhos andam metade |
+| Dado a dedo | 40 | Você escolhe o número; o 6 não dá jogada extra |
 
-## Como funciona a conexão
+- **Habilidades dos pinos** (uma por pino, sem repetir):
 
-O GitHub Pages só hospeda arquivos, então a conversa entre a TV e os celulares é feita com **WebRTC** usando a biblioteca [PeerJS](https://peerjs.com):
+| Habilidade | Formato | Efeito |
+|---|---|---|
+| Normal | círculo | — |
+| Corredor | com rastro | +2 em toda jogada |
+| Tanque | octógono | anda metade, aguenta 1 captura a cada saída da base |
+| Vácuo | redemoinho | até 6 casas atrás de um adversário, anda de graça 1/3 do que ele andar |
+| Laço | corda | adversário até 3 casas à frente anda 2 a menos |
+| Ligeiro | raio | sai da base com 5 ou 6 |
+| Banqueiro | moeda | pontos em dobro andando |
+| Vingativo | espinhos | quem o captura perde 20 pontos |
+| Blindado | escudo | imune a buraco negro e laço |
 
-- O tabuleiro se registra no servidor gratuito do PeerJS com o nome `ludo-de-sofa-v1-<número da sala>`.
-- O QR code leva para `index.html?sala=<número>`; o celular procura esse nome e se conecta **direto** ao tabuleiro.
-- O tabuleiro é quem manda: ele guarda o estado, aplica as regras e envia o estado para todos. O celular só pede "sentar", "rolar" e "mover" — e o tabuleiro confere se é a vez dele.
+Ordem dos ajustes no movimento: Tanque (metade) → Corredor (+2) → Laço (−2) → vizinho de buraco negro (metade) → no mínimo 1 casa.
 
-Funciona melhor com todo mundo no **mesmo Wi-Fi**. Em 4G costuma funcionar também (o PeerJS usa um servidor de retransmissão gratuito quando a conexão direta falha), mas redes muito fechadas (Wi-Fi de empresa, por exemplo) podem bloquear.
+## Como funciona
+O GitHub Pages só hospeda arquivos. A conversa entre a TV e os celulares usa **WebRTC** com a biblioteca [PeerJS](https://peerjs.com): a TV se registra no servidor gratuito do PeerJS e o celular se conecta direto a ela. A TV é quem manda: guarda o estado, aplica as regras e controla o tempo. O celular só faz pedidos (sentar, girar, mover, usar poder), e a TV confere se pode.
 
 ## Estrutura
-
 ```
-index.html          tela inicial, tabuleiro e controle (a URL decide qual aparece)
-css/estilo.css      visual
-js/regras.js        regras do Ludo, sem tela nem rede (dá para testar sozinho)
-js/comum.js         dado, sons, vibração, ID do aparelho
-js/mesa.js          tabuleiro: rede, desenho em SVG e animações
-js/controle.js      celular: rede e telas do controle
-js/app.js           decide se a página é tabuleiro ou controle
-                    (PeerJS 1.5.4 e qrcode-generator 1.4.4 vêm do CDN jsDelivr)
-testes/             testes das regras
+index.html            página inicial com os jogos
+comum/base.css        cores, fontes e peças visuais de todos os jogos
+comum/comum.js        conexão, dado, sons, vibração, nome e ID do aparelho
+ludo/index.html       tabuleiro e controle do Ludo (a URL decide qual aparece)
+ludo/css/ludo.css     visual do Ludo
+ludo/js/regras.js     regras do Clássico e do Super, sem tela nem rede
+ludo/js/pecas.js      desenho dos pinos de cada habilidade
+ludo/js/mesa.js       tabuleiro: rede, tempo, desenho e animações
+ludo/js/controle.js   celular: rede, vibração, poderes e habilidades
+ludo/js/app.js        decide se a página é tabuleiro ou controle
+ludo/testes/          testes das regras
 ```
 
 ## Testar
+- Regras: `node ludo/testes/regras.test.js`
+- Sem celular: abra `ludo/?teste`. Aparece **Adicionar jogador local** em cada cor, e dá para jogar pelo mouse.
+- No computador: `python3 -m http.server 8080` na pasta. Para o celular entrar, use o IP do computador (ex.: `http://192.168.0.10:8080`).
+- Servidor PeerJS próprio (opcional): `npx peerjs --port 9000` e abra o tabuleiro com `?servidor=IP:9000`.
 
-**Regras** (precisa do Node.js):
-```bash
-node testes/regras.test.js
-```
-
-**Sem celular:** abra o site com `?teste` no final (ex.: `https://SEU_USUARIO.github.io/ludo-de-sofa/?teste`). Na sala aparece **Adicionar jogador local** em cada cor; aí dá para jogar tudo pelo mouse (botão **Girar dado** e clique no pino do tabuleiro). Dá para misturar jogadores locais com celulares.
-
-**No computador antes de publicar:** rode `python3 -m http.server 8080` na pasta e abra `http://localhost:8080`. Para o celular entrar, use o IP do computador na rede (ex.: `http://192.168.0.10:8080`) em vez de `localhost`, senão o QR code aponta para o próprio celular.
-
-**Servidor PeerJS próprio (opcional):** se o servidor gratuito estiver fora do ar, rode um com `npx peerjs --port 9000` e abra o tabuleiro com `?servidor=IP_DO_COMPUTADOR:9000`. O QR code já leva esse parâmetro para os celulares.
+## Ideias para depois
+- Memes/emojis de reação: bonequinho com raiva ao ser capturado, rindo ao capturar.
