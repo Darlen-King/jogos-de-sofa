@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b2433">
+  <title>Ludo de Sofá</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<!-- ============ INÍCIO (computador/TV) ============ -->
+<section id="inicio" class="tela" hidden>
+  <div class="inicio-card">
+    <div class="cores4"><span style="background:var(--red)"></span><span style="background:var(--green)"></span><span style="background:var(--yellow)"></span><span style="background:var(--blue)"></span></div>
+    <h1>Ludo de Sofá</h1>
+    <p>O tabuleiro fica nesta tela. Cada jogador lê o QR code com o celular, escolhe uma cor e usa o celular como controle.</p>
+    <div class="linha-btns"><button class="btn grande" id="btn-criar">Criar sala</button></div>
+    <p class="aviso" id="aviso-local" hidden>Você abriu o arquivo direto do computador. O celular só consegue entrar quando o jogo estiver publicado (GitHub Pages) ou servido pela rede. Veja o README.</p>
+  </div>
+</section>
+
+<!-- ============ MESA (computador/TV) ============ -->
+<section id="mesa" class="tela" hidden>
+
+  <!-- sala de espera -->
+  <div id="sala">
+    <div class="qr-card">
+      <span class="rotulo">Aponte a câmera do celular</span>
+      <div class="qr" id="qr"><span class="aviso">Abrindo a sala…</span></div>
+      <span class="rotulo">Sala</span>
+      <span class="codigo" id="codigo">····</span>
+      <span class="link" id="link"></span>
+    </div>
+    <div class="sala-info">
+      <h2>Leia o QR code e escolha sua cor</h2>
+      <div class="vagas" id="vagas"></div>
+      <div class="linha-btns">
+        <button class="btn grande" id="btn-comecar" disabled>Começar partida</button>
+        <span class="aviso" id="dica-comecar">Precisa de pelo menos 2 jogadores.</span>
+      </div>
+      <p class="aviso" id="status-mesa">Conectando ao servidor de salas…</p>
+    </div>
+  </div>
+
+  <!-- jogo -->
+  <div id="jogo" hidden>
+    <div class="tabuleiro-box"><svg id="svg" viewBox="0 0 15 15" role="img" aria-label="Tabuleiro de Ludo"></svg></div>
+    <div class="painel">
+      <div class="dado-box">
+        <span class="quem" id="quem">Vez do Vermelho</span>
+        <div class="dado" id="dado-mesa"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="msg" id="msg-mesa"></p>
+        <button class="btn" id="btn-rolar-local" hidden>Girar dado</button>
+      </div>
+      <div class="jogadores" id="jogadores"></div>
+      <div class="qr-mini" id="qr-mini" hidden><div id="qr2"></div><span>Caiu a conexão de alguém? É só ler este QR code de novo com o mesmo celular.</span></div>
+      <div class="linha-btns">
+        <button class="btn vazado" id="btn-qr">Mostrar QR code</button>
+        <button class="btn vazado" id="btn-nova">Voltar à sala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- fim -->
+  <div class="sobreposto" id="fim" hidden>
+    <div class="podio">
+      <h2>Fim de jogo!</h2>
+      <ol id="ranking"></ol>
+      <button class="btn grande" id="btn-denovo" style="background:var(--tinta);color:var(--papel)">Jogar de novo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTROLE (celular) ============ -->
+<section id="controle" class="tela" hidden>
+  <div class="topo"><h2 id="c-titulo">Ludo de Sofá</h2><span class="status-rede" id="c-rede">Conectando</span></div>
+
+  <div id="c-conectando" class="centro">
+    <div class="dado rolando"><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i></div>
+    <p class="msg" id="c-conectando-msg">Entrando na sala…</p>
+  </div>
+
+  <div id="c-escolher" hidden>
+    <p class="msg" style="margin-bottom:12px">Escolha sua cor</p>
+    <div class="cores-btns" id="c-cores"></div>
+    <p class="espera" id="c-escolher-aviso" style="margin-top:14px"></p>
+  </div>
+
+  <div id="c-aguardando" hidden>
+    <div class="cartao-cor" id="c-cartao-sala"><span>Você é o</span><h2 id="c-nome-sala"></h2></div>
+    <div class="centro"><p class="msg">Esperando o tabuleiro começar a partida…</p><p class="aviso" id="c-qtd"></p></div>
+    <button class="btn vazado" id="c-trocar" style="width:100%">Trocar de cor</button>
+  </div>
+
+  <div id="c-jogando" hidden>
+    <div style="display:grid;gap:18px">
+      <div class="cartao-cor" id="c-cartao"><h2 id="c-nome"></h2><span class="msg" id="c-msg"></span></div>
+      <button class="botao-dado" id="c-rolar" disabled>
+        <div class="dado" id="dado-celular"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span id="c-rolar-txt">Girar dado</span>
+      </button>
+      <div class="pinos" id="c-pinos"></div>
+    </div>
+  </div>
+
+  <div id="c-fim" hidden class="centro">
+    <h2 id="c-fim-titulo">Fim de jogo!</h2>
+    <p class="msg" id="c-fim-msg"></p>
+    <p class="aviso">Aguarde o tabuleiro começar outra partida.</p>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="js/regras.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/mesa.js"></script>
+<script src="js/controle.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
