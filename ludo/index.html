@@ -53,6 +53,7 @@
       </div>
       <div class="vagas" id="vagas"></div>
       <button class="link-btn guia-btn" id="btn-guia-sala" type="button" hidden>Ver o que cada habilidade e cada poder faz</button>
+      <button class="link-btn guia-btn" id="btn-config-sala" type="button">Memes e som</button>
       <div class="linha-btns">
         <button class="btn grande" id="btn-comecar" disabled>Começar partida</button>
         <span class="aviso" id="dica-comecar">Precisa de pelo menos 2 jogadores.</span>
@@ -65,7 +66,6 @@
   <div id="jogo" hidden>
     <div class="tabuleiro-box">
       <svg id="svg" viewBox="0 0 15 15" role="img" aria-label="Tabuleiro de Ludo"></svg>
-      <div class="anuncio" id="anuncio" hidden><span class="anuncio-nome" id="anuncio-nome"></span><b id="anuncio-poder"></b></div>
     </div>
     <div class="painel">
       <div class="dado-box">
@@ -81,6 +81,7 @@
         <button class="btn vazado" id="btn-qr">Mostrar QR code</button>
         <button class="btn vazado" id="btn-nova">Voltar à sala</button>
         <button class="btn vazado" id="btn-guia-jogo" hidden>Habilidades e poderes</button>
+        <button class="btn vazado" id="btn-config-jogo" type="button">Memes e som</button>
       </div>
     </div>
   </div>
@@ -94,6 +95,26 @@
     </div>
   </div>
 </section>
+
+<!-- aviso rápido no topo da TV ("Azul usou Retroceder", habilidades) -->
+<div class="aviso-topo" id="aviso-topo" hidden role="status" aria-live="polite"><img id="aviso-topo-img" alt="" hidden><span id="aviso-topo-txt"></span></div>
+
+<!-- meme quando alguém perde um pino (só na TV) -->
+<div class="meme" id="meme" hidden role="status" aria-label="Perdeu um pino. Toque para fechar">
+  <img id="meme-img" alt="" hidden>
+  <video id="meme-video" playsinline preload="auto" hidden></video>
+  <div class="meme-legenda" id="meme-legenda"></div>
+</div>
+
+<!-- configurações da TV: memes e som (salvas neste aparelho) -->
+<div class="guia" id="config" hidden role="dialog" aria-modal="true" aria-labelledby="config-titulo">
+  <div class="config-caixa">
+    <div class="guia-topo"><h2 id="config-titulo">Memes e som</h2><button class="btn vazado" id="config-fechar" type="button">Fechar</button></div>
+    <div class="interruptor"><div><b>Memes</b><small>Aparece um meme quando alguém perde um pino (no máximo 1 a cada 20 segundos).</small></div><button class="chave" id="chave-memes" role="switch" aria-checked="true" aria-label="Memes"></button></div>
+    <div class="interruptor"><div><b>Som</b><small>Som do meme.</small></div><button class="chave" id="chave-som" role="switch" aria-checked="true" aria-label="Som"></button></div>
+    <button class="link-btn" id="config-testar" type="button">Testar o meme</button>
+  </div>
+</div>
 
 <!-- ============ CONTROLE (celular) ============ -->
 <section id="controle" class="tela" hidden>
@@ -141,10 +162,15 @@
         <span id="c-rolar-txt">Girar dado</span>
       </button>
       <div class="escolha-pino" id="c-escolha-pino" hidden><span id="c-escolha-txt"></span><button class="link-btn" id="c-cancelar" type="button">Cancelar</button></div>
+      <div id="c-depois-box" hidden>
+        <div class="poderes-topo"><p class="msg">Poderes depois do dado</p><button class="link-btn" id="c-guia-depois" type="button">O que cada um faz?</button></div>
+        <div class="poderes-depois" id="c-depois"></div>
+        <p class="aviso" id="c-depois-dica"></p>
+      </div>
       <div class="pinos" id="c-pinos"></div>
       <button class="btn-guia" id="c-guia-pinos" type="button" hidden>O que meus pinos fazem?</button>
       <div id="c-poderes-box" hidden>
-        <div class="poderes-topo"><p class="msg">Poderes <span class="aviso">— 1 por turno, antes de girar</span></p><button class="link-btn" id="c-guia-poderes" type="button">O que cada um faz?</button></div>
+        <div class="poderes-topo"><p class="msg">Poderes antes do dado <span class="aviso">— pagos com pontos</span></p><button class="link-btn" id="c-guia-poderes" type="button">O que cada um faz?</button></div>
         <div class="poderes" id="c-poderes"></div>
       </div>
     </div>
@@ -181,6 +207,7 @@
 <script src="js/regras.js"></script>
 <script src="js/pecas.js"></script>
 <script src="js/guia.js"></script>
+<script src="js/efeitos.js"></script>
 <script src="js/mesa.js"></script>
 <script src="js/controle.js"></script>
 <script src="js/app.js"></script>
