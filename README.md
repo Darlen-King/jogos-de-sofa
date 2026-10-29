@@ -22,15 +22,22 @@ Site: https://darlen-king.github.io/jogos-de-sofa/
 Tudo do Clássico, mais:
 - **Bloqueio:** dois pinos da mesma cor na mesma casa não podem ser capturados (o adversário pode passar ou parar ali).
 - **Pontos:** +1 por casa nova andada, +10 por captura, +50 por pino que chega. Servem para comprar poderes; quem vence ainda é quem leva os 4 pinos primeiro.
-- **Poderes** (1 por turno, antes de girar; o preço dobra a cada uso daquele poder):
+- **Poderes** (1 por turno):
+
+Depois de girar o dado (não custam pontos; 2 usos de cada por partida, mostrados como bolinhas; tocar de novo no poder cancela):
+
+| Poder | O que faz |
+|---|---|
+| Retroceder | Um pino volta o número que saiu; não passa da casa de saída; pode capturar; 6 joga de novo |
+| Proteção máxima | O pino fica imune a captura até a próxima vez do dono; depois você ainda anda normal (bolha azul) |
+| Ponto de segurança | O pino anda normal e a casa onde parar vira segura por 2 rodadas do dono (só no caminho principal) |
+
+Antes de girar (o preço dobra a cada uso daquele poder):
 
 | Poder | Preço inicial | O que faz |
 |---|---|---|
 | Fuga de pino | 10 | Tira um pino da base sem 6; você não gira neste turno |
-| Ponto de segurança | 10 | Leva um pino seu para a casa segura mais próxima atrás dele (também solta do buraco negro) |
 | Dado super | 15 | O dado cai só em par, ímpar, 1–3 ou 4–6 |
-| Proteção máxima | 20 | O pino não é capturado enquanto ficar parado |
-| Retroceder | 25 | O dado anda para trás; pode capturar; 6 joga de novo |
 | Buraco negro | 30 | A casa do pino prende quem cair (sai somando 10 no dado); vizinhos andam metade |
 | Dado a dedo | 40 | Você escolhe o número; o 6 não dá jogada extra |
 
@@ -49,6 +56,9 @@ Tudo do Clássico, mais:
 | Blindado | escudo | imune a buraco negro e laço |
 
 Ordem dos ajustes no movimento: Tanque (metade) → Corredor (+2) → Laço (−2) → vizinho de buraco negro (metade) → no mínimo 1 casa.
+
+- **Sinais na TV:** cada pino com habilidade tem um selo no canto (vento, corrente, raio, ½, seta, $, !, escudo). Depois do dado, se a habilidade vai funcionar, o selo pulsa e o destino ganha uma etiqueta ("+2", "metade", "−2 laço"). Quando ela acontece, o pino dá um pulo e aparece um aviso no topo. Pino preso no buraco negro: cadeado e pino apagado. Destino no buraco: vermelho com "buraco!".
+- **Meme:** quando alguém perde um pino (captura ou buraco negro), aparece um meme no canto da TV por uns 4 segundos (no máximo 1 a cada 20 s). Botão **Memes e som** na TV liga/desliga, salvo no aparelho.
 
 ## Bomba no Sofá
 Jogo de cartas de 2 a 5 jogadores, inspirado nos jogos de "batata quente" com bombas, com cartas e desenhos próprios. Cada um vê a própria mão no celular; a TV mostra a mesa.
@@ -75,7 +85,10 @@ ludo/js/regras.js     regras do Clássico e do Super, sem tela nem rede
 ludo/js/pecas.js      desenho dos pinos de cada habilidade
 ludo/js/mesa.js       tabuleiro: rede, tempo, desenho e animações
 ludo/js/controle.js   celular: rede, vibração, poderes e habilidades
+ludo/js/efeitos.js    aviso no topo da TV, meme e o botão Memes e som
 ludo/js/app.js        decide se a página é tabuleiro ou controle
+ludo/img/             ícones dos poderes de depois do dado
+ludo/meme/            animação e som do meme
 ludo/testes/          testes das regras
 bomba/                mesma organização para o Bomba no Sofá (regras.js, cartas.js, guia.js, mesa.js, controle.js)
 ```
@@ -88,4 +101,4 @@ bomba/                mesma organização para o Bomba no Sofá (regras.js, cart
 - Servidor PeerJS próprio (opcional): `npx peerjs --port 9000` e abra o tabuleiro com `?servidor=IP:9000`.
 
 ## Ideias para depois
-- Memes/emojis de reação: bonequinho com raiva ao ser capturado, rindo ao capturar.
+- Emojis de reação (bonequinho rindo ao capturar), mais memes.
