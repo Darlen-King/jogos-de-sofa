@@ -174,9 +174,62 @@
 .guia-icone { display: grid; place-items: center; min-height: 40px; }
 .guia-sinais { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.4; }
 .guia-nota { font-size: 14.5px; line-height: 1.45; color: var(--apagado); }
-.guia-item:not(:has(.guia-icone svg)) { grid-template-columns: 0 minmax(0, 1fr); gap: 0; }
+.guia-item:not(:has(.guia-icone > *)) { grid-template-columns: 0 minmax(0, 1fr); gap: 0; }
 .btn-guia { background: color-mix(in srgb, var(--super) 18%, var(--mesa-2)); border: 2px solid color-mix(in srgb, var(--super) 55%, var(--linha)); color: var(--texto); font-weight: 800; padding: 12px 14px; border-radius: 14px; width: 100%; }
 .guia-btn { justify-self: start; color: var(--super); }
 .topo-dir { display: flex; align-items: center; gap: 10px; }
 .ajuda { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--super) 25%, var(--mesa-2)); border: 2px solid var(--super); color: var(--texto); font: 700 18px var(--titulo); }
 .poderes-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- habilidades: selo, pronto e acontecendo ---------- */
+.pino .selo-hab { transform-box: fill-box; transform-origin: center; }
+.pino.armado .selo-hab { animation: selo-pulsa .8s ease-in-out infinite; }
+@keyframes selo-pulsa { 0%, 100% { transform: translate(0.31px, 0.31px) scale(1); } 50% { transform: translate(0.31px, 0.31px) scale(1.35); } }
+.pino .corpo { transform-box: fill-box; transform-origin: center; }
+.pino.disparou .corpo { animation: disparou 1.1s ease; }
+@keyframes disparou { 0% { transform: scale(1); } 20% { transform: scale(1.35) rotate(-8deg); } 45% { transform: scale(.9) rotate(6deg); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.pino.preso { opacity: 1; }
+.pino.preso .corpo { opacity: .45; }
+.buraco-giro { animation-duration: 9s; }
+.anel-giro { animation: gira 3s linear infinite; transform-box: fill-box; transform-origin: center; }
+.destino { animation: destino 1.1s ease-in-out infinite; }
+@keyframes destino { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* ---------- aviso no topo da TV ---------- */
+.aviso-topo { position: fixed; left: 50%; top: max(12px, env(safe-area-inset-top, 0px)); transform: translate(-50%, -160%); z-index: 15; background: rgba(20, 16, 40, .94); color: #fff; border: 3px solid var(--super); padding: 8px 18px 8px 10px; border-radius: 16px; display: flex; align-items: center; gap: 10px; font: 600 clamp(17px, 2vw, 24px) var(--titulo); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); max-width: calc(100% - 32px); transition: transform .3s ease; pointer-events: none; }
+.aviso-topo.show { transform: translate(-50%, 0); }
+.aviso-topo img { width: 40px; height: 40px; }
+
+/* ---------- meme ---------- */
+.meme { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 16; display: grid; justify-items: center; cursor: pointer; transform: translateY(140%); transition: transform .35s cubic-bezier(.2, 1.2, .4, 1); }
+.meme.show { transform: translateY(0); }
+.meme img { width: min(42vw, 340px); height: auto; display: block; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .45)); }
+.meme video { width: min(42vw, 340px); border-radius: 16px; display: block; box-shadow: 0 8px 20px rgba(0, 0, 0, .45); }
+.meme-legenda { margin-top: -10px; background: #2b2147; color: #fff; font: 700 clamp(15px, 1.8vw, 20px) var(--titulo); padding: 6px 16px; border-radius: 999px; border: 3px solid #fff; white-space: nowrap; position: relative; }
+
+/* ---------- configurações (memes e som) ---------- */
+.config-caixa { background: var(--mesa-2); border-radius: 22px; width: min(440px, 100%); padding: 0 0 16px; display: grid; gap: 4px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.config-caixa > .link-btn { justify-self: start; margin: 4px 18px 0; color: var(--super); }
+.interruptor { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 18px; border-top: 1px solid var(--linha); }
+.interruptor b { display: block; font: 600 19px var(--titulo); }
+.interruptor small { color: var(--apagado); font-size: 14px; }
+.chave { width: 54px; height: 32px; border-radius: 999px; background: var(--linha); position: relative; flex: none; }
+.chave::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; }
+.chave[aria-checked="true"] { background: var(--super); }
+.chave[aria-checked="true"]::after { left: 26px; }
+
+/* ---------- celular: poderes de depois do dado ---------- */
+.poderes-depois { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.poder-depois { background: var(--mesa-2); border: 3px solid var(--linha); border-radius: 18px; padding: 8px 4px 6px; display: grid; justify-items: center; gap: 2px; transition: transform .15s; }
+.poder-depois img { width: 56px; height: 56px; display: block; pointer-events: none; }
+.poder-depois b { font: 600 13px/1.1 var(--titulo); text-align: center; }
+.poder-depois:disabled { filter: grayscale(1); }
+.poder-depois.pronto { border-color: color-mix(in srgb, var(--super) 70%, var(--linha)); animation: brilho 1.6s ease-in-out infinite; }
+@keyframes brilho { 0%, 100% { box-shadow: 0 0 0 0 rgba(183, 139, 255, 0); } 50% { box-shadow: 0 0 0 6px rgba(183, 139, 255, .4); } }
+.poder-depois.ativo { border-color: var(--super); background: color-mix(in srgb, var(--super) 22%, var(--mesa-2)); transform: translateY(-3px); }
+.bolinhas { display: flex; gap: 4px; margin-top: 2px; }
+.bolinhas i { width: 9px; height: 9px; border-radius: 50%; background: var(--super); }
+.bolinhas i.usada { background: transparent; box-shadow: inset 0 0 0 2px var(--linha); }
+.tag-hab { font-size: 11px; font-weight: 800; color: #1d2330; background: var(--yellow); border-radius: 99px; padding: 1px 6px; }
+.tag-hab.perigo { background: var(--alerta); color: #fff; }
+.pino-btn.hab-pronta svg .selo-hab { animation: selo-pulsa .8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
