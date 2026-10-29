@@ -148,28 +148,87 @@ teste('Dado a dedo: capturando ainda joga de novo', () => {
 teste('Fuga: tira da base e passa a vez sem girar', () => {
   const S = superCom(100); L.usarPoder(S, 'red', 'fuga', { i: 2 }); igual(S.pos.red[2], 0); igual(S.vez, 'green');
 });
-teste('Ponto de segurança: volta para a segura atrás e ainda gira', () => {
-  const S = superCom(100); S.pos.red[0] = 12; // segura atrás: 8 (estrela)
-  L.usarPoder(S, 'red', 'seguranca', { i: 0 }); igual(S.pos.red[0], 8); igual(S.vez, 'red'); igual(S.rolou, false);
-  const S2 = superCom(100); S2.pos.red[0] = 0; igual(L.usarPoder(S2, 'red', 'seguranca', { i: 0 }), false, 'já está na saída');
+// ---- poderes de depois do dado ----
+teste('poderes de depois do dado: só depois de girar, 2 usos cada', () => {
+  const S = superCom(0); S.pos.red[0] = 20;
+  igual(L.usarPoder(S, 'red', 'retroceder'), false, 'antes do dado não');
+  L.rolar(S, 'red', 3); igual(L.podeUsar(S, 'red', 'retroceder'), true, 'não precisa de pontos');
+  igual(S.cargas.red.retroceder, 2);
+  L.armar(S, 'red', 'retroceder'); L.mover(S, 'red', 0); igual(S.pos.red[0], 17); igual(S.cargas.red.retroceder, 1);
+  S.vez = 'red'; S.poderTurno = null; L.rolar(S, 'red', 2); L.armar(S, 'red', 'retroceder'); L.mover(S, 'red', 0);
+  igual(S.cargas.red.retroceder, 0);
+  S.vez = 'red'; S.poderTurno = null; L.rolar(S, 'red', 2); igual(L.armar(S, 'red', 'retroceder'), false, 'acabaram os usos');
 });
-teste('Proteção: não é capturado parado e perde ao andar', () => {
-  const T = superCom(100); T.pos.red[0] = 15; T.pos.green[0] = 4; T.protegido.green = 0;
-  L.rolar(T, 'red', 2); L.mover(T, 'red', 0); igual(T.pos.green[0], 4); igual(T.pos.red[0], 17);
-  const S = superCom(100); S.vez = 'green'; S.pontos.green = 100; S.pos.green[0] = 4;
-  L.usarPoder(S, 'green', 'protecao', { i: 0 }); igual(S.protegido.green, 0);
-  L.rolar(S, 'green', 3); L.mover(S, 'green', 0); igual(S.protegido.green, null);
+teste('tocar de novo no poder cancela e volta às jogadas normais', () => {
+  const S = superCom(0); S.pos.red[0] = 20; L.rolar(S, 'red', 3);
+  L.armar(S, 'red', 'retroceder'); igual(op(S, 0).tipo, 'retro'); igual(S.armado, 'retroceder');
+  L.armar(S, 'red', 'retroceder'); igual(S.armado, null); igual(op(S, 0).tipo, 'andar'); igual(S.cargas.red.retroceder, 2);
+});
+teste('1 poder por jogada: depois de usar um antes do dado, não usa outro depois', () => {
+  const S = superCom(100); S.pos.red[0] = 20;
+  L.usarPoder(S, 'red', 'dedo', { n: 3 }); L.rolar(S, 'red', 1); igual(L.armar(S, 'red', 'retroceder'), false);
 });
 teste('Retroceder: anda para trás, captura, e 6 joga de novo', () => {
-  const S = superCom(100); S.pos.red[0] = 20; S.pos.green[0] = 4; // verde na casa 17 = vermelho 17
-  L.usarPoder(S, 'red', 'retroceder'); L.rolar(S, 'red', 3); igual(op(S, 0).para, 17);
-  const r = L.mover(S, 'red', 0); igual(r.capturados, [{ cor: 'green', i: 0 }]); igual(S.pontos.red, 100 - 25 + 10);
-  const T = superCom(100); T.pos.red[0] = 20; L.usarPoder(T, 'red', 'retroceder'); L.rolar(T, 'red', 6); L.mover(T, 'red', 0);
+  const S = superCom(0); S.pos.red[0] = 20; S.pos.green[0] = 4; // verde na casa 17 = vermelho 17
+  L.rolar(S, 'red', 3); L.armar(S, 'red', 'retroceder'); igual(op(S, 0).para, 17);
+  const r = L.mover(S, 'red', 0); igual(r.capturados, [{ cor: 'green', i: 0 }]); igual(S.pontos.red, 10);
+  const T = superCom(0); T.pos.red[0] = 20; L.rolar(T, 'red', 6); L.armar(T, 'red', 'retroceder'); L.mover(T, 'red', 0);
   igual(T.pos.red[0], 14); igual(T.vez, 'red');
 });
 teste('Retroceder: para na saída e não vale na reta final', () => {
-  const S = superCom(100); S.pos.red = [3, 52, -1, -1];
-  L.usarPoder(S, 'red', 'retroceder'); L.rolar(S, 'red', 5); igual(S.validas, [0]); igual(op(S, 0).para, 0);
+  const S = superCom(0); S.pos.red = [3, 52, -1, -1];
+  L.rolar(S, 'red', 5); L.armar(S, 'red', 'retroceder'); igual(S.validas, [0]); igual(op(S, 0).para, 0);
+});
+teste('sem jogada para frente, dá para usar Retroceder ou passar', () => {
+  const S = superCom(0); S.pos.red = [54, 10, -1, -1]; S.preso.red[1] = 2; S.buracos.push({ cor: 'green', casa: 10, dono: { cor: 'green', i: 0 } });
+  L.rolar(S, 'red', 4); // 54+4 passa do fim; pino 1 preso só carrega
+  igual(S.validas, [1]);
+  const T = superCom(0); T.pos.red = [54, -1, -1, -1]; L.rolar(T, 'red', 5);
+  igual(T.validas, []); igual(L.passar(T, 'red'), true); igual(T.vez, 'green');
+  const U = superCom(0); U.pos.red = [10, -1, -1, -1]; L.rolar(U, 'red', 3); igual(L.passar(U, 'red'), false, 'tem jogada normal');
+});
+teste('Proteção máxima: protege, ainda anda, e dura até a próxima vez do dono', () => {
+  const S = superCom(0); S.pos.red = [15, 30, -1, -1];
+  L.rolar(S, 'red', 2); L.armar(S, 'red', 'protecao'); igual(op(S, 0).tipo, 'proteger');
+  L.mover(S, 'red', 0); igual(S.protegido.red[0], true); igual(S.vez, 'red'); igual(S.rolou, true, 'ainda move com o dado');
+  igual(op(S, 1).tipo, 'andar'); L.mover(S, 'red', 0); igual(S.pos.red[0], 17); igual(S.protegido.red[0], true, 'continua protegido andando');
+  // verde cai em cima e não captura (vermelho 17 = verde 4)
+  S.pos.green[0] = 2; L.rolar(S, 'green', 2); L.mover(S, 'green', 0); igual(S.pos.red[0], 17); igual(S.pos.green[0], 4);
+  igual(S.vez, 'red'); igual(S.protegido.red[0], false, 'acabou na vez do dono');
+});
+teste('Proteção máxima sem jogada depois: passa a vez', () => {
+  const S = superCom(0); S.pos.red = [54, 20, -1, -1]; S.preso.red[1] = 0; S.buracos.push({ cor: 'green', casa: 20, dono: { cor: 'green', i: 0 } });
+  S.pos.red[2] = 30; L.rolar(S, 'red', 5);
+  // pino 2 anda; protege o 2 e depois só ele anda
+  L.armar(S, 'red', 'protecao'); igual(S.validas, [2]); L.mover(S, 'red', 2); igual(S.validas.includes(2), true);
+});
+teste('Ponto de segurança: a casa onde parar fica segura por 2 rodadas do dono', () => {
+  const S = superCom(0); S.pos.red[0] = 15;
+  L.rolar(S, 'red', 2); L.armar(S, 'red', 'seguranca'); L.mover(S, 'red', 0);
+  igual(S.zonas, [{ casa: 17, cor: 'red', rodadas: 2 }]); igual(S.cargas.red.seguranca, 1);
+  // verde não captura lá
+  S.pos.green[0] = 2; L.rolar(S, 'green', 2); L.mover(S, 'green', 0); igual(S.pos.red[0], 17);
+  igual(S.vez, 'red'); igual(S.zonas[0].rodadas, 1);
+  L.proximaVez(S); L.proximaVez(S); igual(S.vez, 'red'); igual(S.zonas, [], 'acabou depois de 2 rodadas');
+});
+teste('Ponto de segurança: só vale parando no caminho principal', () => {
+  const S = superCom(0); S.pos.red = [48, 20, -1, -1]; L.rolar(S, 'red', 4); L.armar(S, 'red', 'seguranca');
+  igual(S.validas, [1], 'o pino 0 entraria na reta final');
+});
+teste('opções mostram o que a habilidade vai fazer (etiquetas)', () => {
+  const S = comHab('red', ['corredor', 'tanque', 'ligeiro', 'banqueiro']); S.pos.red = [10, 20, -1, 30];
+  L.rolar(S, 'red', 5);
+  igual(op(S, 0).tags, ['+2']); igual(op(S, 1).tags, ['metade']); igual(op(S, 2).tags, ['sai com 5']); igual(op(S, 3).tags, ['2× pts']);
+});
+teste('destino no buraco negro vem marcado como perigo', () => {
+  const S = superCom(0); S.pos.red[0] = 10; S.buracos.push({ cor: 'green', casa: 13 + 0, dono: { cor: 'green', i: 0 } });
+  S.buracos[0].casa = 14; L.rolar(S, 'red', 4); igual(op(S, 0).perigo, 'buraco!');
+});
+teste('eventos: corredor, laço, tanque e buraco aparecem na última jogada', () => {
+  const S = comHab('red', ['corredor', 'normal', 'normal', 'normal']); S.pos.red[0] = 10;
+  L.rolar(S, 'red', 3); L.mover(S, 'red', 0); igual(S.ultimo.eventos.map((e) => e.tipo), ['corredor']);
+  const T = superCom(0); T.pos.red[0] = 10; T.buracos.push({ cor: 'green', casa: 13, dono: { cor: 'green', i: 0 } });
+  L.rolar(T, 'red', 3); L.mover(T, 'red', 0); igual(T.ultimo.preso, true); igual(T.ultimo.eventos.map((e) => e.tipo), ['buraco']);
 });
 teste('Buraco negro: prende quem cai, dono imune, carga de 10 com sobra', () => {
   const S = superCom(100); S.pos.red[0] = 20;
@@ -196,11 +255,6 @@ teste('Buraco negro: quem cai em cima do preso captura e fica preso', () => {
   S.pos.green[0] = 7; S.preso.green[0] = 4; S.pos.red[0] = 17;
   L.rolar(S, 'red', 3); L.mover(S, 'red', 0);
   igual(S.pos.green[0], -1); igual(S.preso.green[0], null); igual(S.preso.red[0], 0);
-});
-teste('Ponto de segurança liberta do buraco negro', () => {
-  const S = superCom(100); S.buracos.push({ cor: 'green', casa: 20, dono: { cor: 'green', i: 3 } });
-  S.pos.red[0] = 20; S.preso.red[0] = 3;
-  L.usarPoder(S, 'red', 'seguranca', { i: 0 }); igual(S.preso.red[0], null); igual(S.buracos, []); igual(S.pos.red[0], 13);
 });
 teste('Buraco negro não pode em casa segura e só 1 por jogador', () => {
   const S = superCom(1000); S.pos.red[0] = 8; igual(L.usarPoder(S, 'red', 'buraco', { i: 0 }), false);
@@ -297,13 +351,17 @@ function partida(modo, poderes) {
   while (S.fase === 'jogo' && passos++ < 20000) {
     const c = S.vez;
     if (poderes && Math.random() < 0.3) {
-      const nomes = Object.keys(L.PODERES), p = nomes[Math.floor(Math.random() * nomes.length)];
+      const nomes = Object.keys(L.PODERES).filter((k) => !L.PODERES[k].depois), p = nomes[Math.floor(Math.random() * nomes.length)];
       L.usarPoder(S, c, p, { i: Math.floor(Math.random() * 4), cat: 'alto', n: 1 + Math.floor(Math.random() * 6) });
       if (S.vez !== c) continue;
     }
     L.rolar(S, c, 1 + Math.floor(Math.random() * 6));
-    if (S.opcoes.length) L.mover(S, c, S.opcoes[Math.floor(Math.random() * S.opcoes.length)].i);
-    else L.passarSemJogada(S);
+    if (poderes && Math.random() < 0.3) L.armar(S, c, L.PODERES_DEPOIS[Math.floor(Math.random() * 3)]);
+    let giros = 0;
+    while (S.fase === 'jogo' && S.vez === c && S.rolou && giros++ < 5) {
+      if (S.opcoes.length) L.mover(S, c, S.opcoes[Math.floor(Math.random() * S.opcoes.length)].i);
+      else if (!L.passar(S, c)) L.passarSemJogada(S);
+    }
     // invariantes
     L.CORES.forEach((cc) => S.pos[cc].forEach((p) => { if (p < -1 || p > 56) throw new Error('posição inválida ' + p); }));
     L.CORES.forEach((cc) => { if (S.pontos[cc] < 0) throw new Error('pontos negativos'); });
