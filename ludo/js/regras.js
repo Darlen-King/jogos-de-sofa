@@ -41,10 +41,10 @@ const Ludo = (() => {
   // ---------------- Ludo Super ----------------
   const PODERES = {
     fuga:       { nome: 'Fuga de pino',       preco: 10, alvo: 'base',   detalhe: 'Escolha um pino que está na base: ele vai direto para a casa de saída, sem precisar tirar 6. Em troca, você não gira o dado neste turno e a vez passa.', desc: 'Tira um pino da base sem precisar de 6. Você não gira o dado neste turno.' },
-    seguranca:  { nome: 'Ponto de segurança', preco: 10, alvo: 'trilha', detalhe: 'Escolha um pino seu na trilha: ele volta para a casa segura (estrela ou saída) mais próxima atrás dele, onde ninguém captura. Também tira o pino de dentro de um buraco negro. Depois você ainda gira o dado normalmente.', desc: 'Leva um pino seu para a casa segura mais próxima atrás dele. Depois você gira normalmente.' },
+    seguranca:  { nome: 'Ponto de segurança', preco: 0, depois: true, icone: 'ponto_seguranca', detalhe: 'Depois de girar o dado, toque em Ponto de segurança e escolha o pino que vai andar. A casa onde ele parar vira casa segura por 2 rodadas suas: ninguém captura ali. Só vale se ele parar no caminho principal (não na reta final). Na TV aparece uma estrela dourada com um anel girando e quantas rodadas faltam.', desc: 'Depois do dado: a casa onde o pino parar vira segura por 2 rodadas suas.' },
     dadoSuper:  { nome: 'Dado super',         preco: 15, escolha: 'categoria', detalhe: 'Antes de girar, escolha como o dado vai cair: par (2, 4, 6), ímpar (1, 3, 5), baixo (1 a 3) ou alto (4 a 6). O número sai sorteado dentro do grupo escolhido. Tirar 6 continua dando jogada extra.', desc: 'Você escolhe: par, ímpar, 1 a 3 ou 4 a 6.' },
-    protecao:   { nome: 'Proteção máxima',    preco: 20, alvo: 'trilha', detalhe: 'Escolha um pino seu na trilha: enquanto ele ficar parado, ninguém consegue capturá-lo (quem cair em cima divide a casa). A proteção acaba quando esse pino se mexer. Só um pino protegido por vez.', desc: 'O pino não pode ser capturado enquanto ficar parado.' },
-    retroceder: { nome: 'Retroceder',         preco: 25, detalhe: 'O próximo dado anda para trás: gire normalmente e escolha qual pino volta o número que saiu. Se cair em cima de um adversário, captura. Tirou 6, joga de novo. Não volta para a base e não vale para pino na reta final.', desc: 'Gire o dado: um pino anda esse número para trás. Pode capturar.' },
+    protecao:   { nome: 'Proteção máxima',    preco: 0, depois: true, icone: 'protecao_maxima', detalhe: 'Depois de girar o dado, toque em Proteção máxima e escolha um pino seu no caminho principal: ninguém consegue capturá-lo até a sua próxima vez (quem cair em cima divide a casa). Depois de proteger, você ainda escolhe o pino que anda com o dado. Na TV aparece uma bolha azul em volta dele.', desc: 'Depois do dado: o pino fica imune até a sua próxima vez. Você ainda anda normalmente.' },
+    retroceder: { nome: 'Retroceder',         preco: 0, depois: true, icone: 'retroceder', detalhe: 'Depois de girar o dado, toque em Retroceder e escolha o pino: ele volta o número que saiu. Só vale para pino no caminho principal, e ele nunca volta para antes da casa de saída. Se cair em cima de um adversário, captura. Tirou 6, joga de novo.', desc: 'Depois do dado: um pino volta o número que saiu. Pode capturar.' },
     buraco:     { nome: 'Buraco negro',       preco: 30, alvo: 'buraco', detalhe: 'A casa onde está o seu pino vira um buraco negro (não pode ser casa segura). Quem parar nela fica preso — inclusive seus outros pinos, menos o que criou o buraco. Para sair, o dono do pino preso usa rolagens nele até somar 10. Quem sai da casa vizinha ao buraco anda só metade. O buraco some quando o primeiro preso sai.', desc: 'A casa do pino vira um buraco negro que prende quem cair nela.' },
     dedo:       { nome: 'Dado a dedo',        preco: 40, escolha: 'numero', detalhe: 'Você escolhe exatamente o número que vai sair no dado. Se escolher 6, não ganha jogada extra (só ganha se capturar alguém).', desc: 'Você escolhe o número do dado. O 6 não dá jogada extra.' },
   };
@@ -80,6 +80,9 @@ const Ludo = (() => {
       ruim: 'Pode ser capturado normalmente.' },
   };
   const PONTOS_CAPTURA = 10, PONTOS_CHEGADA = 50, MULTA_VINGATIVO = 20, CARGA_BURACO = 10;
+  // Poderes usados depois do dado (Retroceder, Proteção máxima, Ponto de segurança): 2 usos de cada por partida
+  const USOS_DEPOIS = 2, RODADAS_ZONA = 2;
+  const PODERES_DEPOIS = ['retroceder', 'protecao', 'seguranca'];
 
   // ---------------- utilidades ----------------
   const naTrilha = (p) => p >= 0 && p <= 50;
@@ -116,9 +119,13 @@ const Ludo = (() => {
       msg: 'Esperando jogadores', vencedores: [], ultimo: null,
       // Super
       pontos: porCor(() => 0), usos: porCor(() => ({})), recorde: porCor(() => quatro(0)),
-      vidas: porCor(() => quatro(0)), preso: porCor(() => quatro(null)), protegido: porCor(() => null),
+      vidas: porCor(() => quatro(0)), preso: porCor(() => quatro(null)), protegido: porCor(() => quatro(false)),
       buracos: [], efeito: null, poderTurno: null, retro: false, semExtra: false, anulado: false,
       anuncio: null, anuncios: 0,
+      cargas: porCor(() => Object.fromEntries(PODERES_DEPOIS.map((k) => [k, USOS_DEPOIS]))), // usos restantes
+      zonas: [],        // casas seguras temporárias: {casa, cor, rodadas}
+      armado: null,     // poder de depois do dado escolhido, esperando o pino
+      jogadas: 0,       // conta as jogadas (a TV usa para animar o que acabou de acontecer)
     };
   }
 
@@ -151,14 +158,23 @@ const Ludo = (() => {
     return N;
   }
 
+  /** Casa segura: saídas, estrelas ou um Ponto de segurança ativo. */
+  const seguro = (S, casa) => SEGURAS.has(casa) || (S.zonas || []).some((z) => z.casa === casa);
+
   // ---------------- movimento ----------------
-  /** Pinos adversários com Laço que estão até 3 casas atrás deste pino. */
-  function temLacoAtras(S, c, p) {
-    const minha = casaDe(c, p);
-    return CORES.some((o) => o !== c && S.lugares[o] && S.pos[o].some((q, j) =>
-      S.habil[o][j] === 'laco' && naTrilha(q) && S.preso[o][j] == null &&
-      ((minha - casaDe(o, q) + 52) % 52) >= 1 && ((minha - casaDe(o, q) + 52) % 52) <= 3));
+  /** Pinos adversários com Laço que estão até 3 casas atrás deste pino: [{cor, i}]. */
+  function lacosAtras(S, c, p) {
+    const minha = casaDe(c, p), out = [];
+    CORES.forEach((o) => {
+      if (o === c || !S.lugares[o]) return;
+      S.pos[o].forEach((q, j) => {
+        const dist = (minha - casaDe(o, q) + 52) % 52;
+        if (S.habil[o][j] === 'laco' && naTrilha(q) && S.preso[o][j] == null && dist >= 1 && dist <= 3) out.push({ cor: o, i: j });
+      });
+    });
+    return out;
   }
+  const temLacoAtras = (S, c, p) => lacosAtras(S, c, p).length > 0;
 
   function vizinhoDeBuraco(S, c, i, p) {
     const minha = casaDe(c, p);
@@ -199,7 +215,27 @@ const Ludo = (() => {
       const m = passosEfetivos(S, c, i, d);
       if (p + m <= FIM) out.push({ i, tipo: 'andar', de: p, para: p + m, passos: m });
     });
+    out.forEach((o) => etiquetar(S, c, o, d));
     return out;
+  }
+
+  /** Marca na opção o que a habilidade do pino vai fazer nesta jogada (para a TV e o celular mostrarem). */
+  function etiquetar(S, c, o, d) {
+    o.tags = [];
+    if (!ehSuper(S)) return;
+    const h = S.habil[c][o.i], p = o.de;
+    if (o.tipo === 'andar') {
+      if (h === 'corredor') o.tags.push('+2');
+      if (h === 'tanque') o.tags.push('metade');
+      if (h === 'banqueiro') o.tags.push('2× pts');
+      if (h !== 'blindado' && naTrilha(p) && temLacoAtras(S, c, p)) o.tags.push('−2 laço');
+      if (h !== 'blindado' && naTrilha(p) && vizinhoDeBuraco(S, c, o.i, p)) o.tags.push('metade buraco');
+    }
+    if (o.tipo === 'sair' && h === 'ligeiro' && d === 5) o.tags.push('sai com 5');
+    if ((o.tipo === 'andar' || o.tipo === 'sair' || o.tipo === 'retro') && naTrilha(o.para) && h !== 'blindado') {
+      const casa = casaDe(c, o.para);
+      if (S.buracos.some((b) => b.casa === casa && !(b.dono.cor === c && b.dono.i === o.i))) o.perigo = 'buraco!';
+    }
   }
 
   /** Para cada jogada possível, simula em uma cópia para saber quem seria capturado. */
@@ -209,6 +245,7 @@ const Ludo = (() => {
       T.anuncio = null;
       const r = mover(T, c, o.i, true);
       o.captura = r ? r.capturados : [];
+      o.vacuo = T.ultimo && T.ultimo.vacuo ? T.ultimo.vacuo.map((v) => ({ cor: v.cor, i: v.i, ganho: v.para - v.de })) : [];
     });
   }
 
@@ -216,7 +253,7 @@ const Ludo = (() => {
   /** Gira o dado. d é o número sorteado (1..6) — quem chama faz o sorteio. */
   function rolar(S, c, d) {
     if (S.fase !== 'jogo' || S.vez !== c || S.rolou) return null;
-    S.retro = false; S.semExtra = false; S.anulado = false;
+    S.retro = false; S.semExtra = false; S.anulado = false; S.armado = null;
     let extraMsg = '';
     if (ehSuper(S) && S.efeito) {
       const e = S.efeito;
@@ -238,9 +275,10 @@ const Ludo = (() => {
     S.opcoes = calcularOpcoes(S, c, d, S.retro);
     S.validas = S.opcoes.map((o) => o.i);
     if (S.opcoes.length) marcarCapturas(S, c);
+    const extras = poderesDepoisDisponiveis(S, c);
     S.msg = S.opcoes.length
       ? quem + ' tirou ' + d + extraMsg + '. Escolha um pino.'
-      : quem + ' tirou ' + d + extraMsg + ' e não tem jogada.';
+      : quem + ' tirou ' + d + extraMsg + (extras.length ? ' e nenhum pino anda para frente. Dá para usar ' + extras.map((k) => PODERES[k].nome).join(' ou ') + ', ou passar a vez.' : ' e não tem jogada.');
     return d;
   }
 
@@ -249,7 +287,7 @@ const Ludo = (() => {
     if (S.fase !== 'jogo' || !S.rolou || S.opcoes.length) return;
     const c = S.vez;
     const denovo = !S.anulado && S.dado === 6 && !S.semExtra;
-    S.rolou = false; S.retro = false;
+    S.rolou = false; S.retro = false; S.armado = null;
     if (denovo) S.msg = nomeDe(S, c) + ' tirou 6: joga de novo.';
     else { proximaVez(S); S.msg = 'Vez de ' + nomeDe(S, S.vez) + '.'; }
   }
@@ -266,7 +304,6 @@ const Ludo = (() => {
     S.pos[c][i] = para;
 
     if (sup) {
-      if (S.protegido[c] === i && de !== para) S.protegido[c] = null;
       if (de < 0 && para === 0) S.vidas[c][i] = S.habil[c][i] === 'tanque' ? 1 : 0;
       if (paraFrente && para >= 0) {
         const base = Math.max(S.recorde[c][i], de < 0 ? 0 : de);
@@ -279,18 +316,18 @@ const Ludo = (() => {
     if (!naTrilha(para)) return res;
     const casa = casaDe(c, para);
 
-    if (podeCapturar && !SEGURAS.has(casa)) {
+    if (podeCapturar && !seguro(S, casa)) {
       CORES.forEach((o) => {
         if (o === c) return;
         if (sup && pinoBloqueado(S, o, casa)) return;
         S.pos[o].forEach((q, j) => {
           if (!naTrilha(q) || casaDe(o, q) !== casa) return;
-          if (sup && S.protegido[o] === j) return;
+          if (sup && S.protegido[o][j]) return;
           if (sup && S.vidas[o][j] > 0) { S.vidas[o][j] = 0; res.salvos.push({ cor: o, i: j }); return; }
           S.pos[o][j] = -1;
           if (sup) {
             S.preso[o][j] = null;
-            if (S.protegido[o] === j) S.protegido[o] = null;
+            S.protegido[o][j] = false;
             if (S.habil[o][j] === 'vingativo') S.pontos[c] = Math.max(0, S.pontos[c] - MULTA_VINGATIVO);
             else S.pontos[c] += PONTOS_CAPTURA;
           }
@@ -338,7 +375,24 @@ const Ludo = (() => {
     const op = S.opcoes.find((o) => o.i === i);
     if (!op) return null;
     const d = S.dado, quem = nomeDe(S, c), num = ' com o pino ' + (i + 1);
+    const armado = S.armado;
+
+    // Proteção máxima: protege o pino e continua a jogada normal com o mesmo dado
+    if (op.tipo === 'proteger') {
+      gastarCarga(S, c, 'protecao');
+      S.protegido[c][i] = true;
+      S.armado = null; S.retro = false;
+      S.opcoes = calcularOpcoes(S, c, d, false);
+      S.validas = S.opcoes.map((o) => o.i);
+      if (!simulacao && S.opcoes.length) marcarCapturas(S, c);
+      S.msg = quem + ' usou Proteção máxima no pino ' + (i + 1) + '. ' + (S.opcoes.length ? 'Agora escolha o pino que vai andar.' : 'Nenhum pino anda com esse dado.');
+      return { capturados: [], salvos: [], chegou: false, preso: false, protegeu: true };
+    }
+
     let r = { capturados: [], salvos: [], chegou: false, preso: false }, msg = '', vacuo = [], libertou = false;
+    const eventos = [];
+    const lacos = ehSuper(S) && op.tipo === 'andar' && S.habil[c][i] !== 'blindado' && naTrilha(op.de) ? lacosAtras(S, c, op.de) : [];
+    if (armado === 'retroceder' && op.tipo === 'retro') gastarCarga(S, c, 'retroceder');
 
     if (op.tipo === 'carga') {
       const nova = S.preso[c][i] + d;
@@ -362,6 +416,32 @@ const Ludo = (() => {
       if (op.tipo === 'andar') vacuo = aplicarVacuo(S, c, op.de, op.para, op.passos);
     }
 
+    // Ponto de segurança: a casa onde o pino parou vira segura por 2 rodadas do dono
+    if (armado === 'seguranca' && (op.tipo === 'andar' || op.tipo === 'sair')) {
+      gastarCarga(S, c, 'seguranca');
+      const p = S.pos[c][i];
+      if (naTrilha(p) && !r.preso) {
+        const casa = casaDe(c, p);
+        S.zonas = S.zonas.filter((z) => z.casa !== casa);
+        S.zonas.push({ casa, cor: c, rodadas: RODADAS_ZONA });
+        eventos.push({ tipo: 'zona', cor: c, i, txt: quem + ' criou um Ponto de segurança' });
+      }
+    }
+    S.armado = null;
+
+    // o que as habilidades fizeram (a TV mostra um aviso no topo)
+    if (ehSuper(S)) {
+      const h = S.habil[c][i];
+      if (op.tipo === 'andar' && h === 'corredor') eventos.push({ tipo: 'corredor', cor: c, i, txt: 'Corredor de ' + quem + ' andou +2' });
+      if (op.tipo === 'sair' && h === 'ligeiro' && d === 5) eventos.push({ tipo: 'ligeiro', cor: c, i, txt: 'Ligeiro de ' + quem + ' saiu com 5' });
+      lacos.forEach((l) => eventos.push({ tipo: 'laco', cor: l.cor, i: l.i, alvo: { cor: c, i }, txt: 'Laço de ' + nomeDe(S, l.cor) + ' segurou ' + quem + ' (−2)' }));
+      vacuo.forEach((v) => eventos.push({ tipo: 'vacuo', cor: v.cor, i: v.i, txt: 'Vácuo de ' + nomeDe(S, v.cor) + ' pegou carona +' + (v.para - v.de) }));
+      r.salvos.forEach((s) => eventos.push({ tipo: 'tanque', cor: s.cor, i: s.i, txt: 'O Tanque de ' + nomeDe(S, s.cor) + ' aguentou!' }));
+      r.capturados.forEach((x) => { if (S.habil[x.cor][x.i] === 'vingativo') eventos.push({ tipo: 'vingativo', cor: x.cor, i: x.i, txt: 'Vingativo! ' + quem + ' perdeu ' + MULTA_VINGATIVO + ' pontos' }); });
+      if (r.preso) eventos.push({ tipo: 'buraco', cor: c, i, txt: quem + ' caiu no buraco negro!' });
+      if (libertou) eventos.push({ tipo: 'libertou', cor: c, i, txt: quem + ' saiu do buraco negro!' });
+    }
+
     if (r.capturados.length) msg = quem + ' capturou ' + r.capturados.map((x) => nomeDe(S, x.cor)).join(' e ') + '!';
     if (r.salvos.length) msg += ' O Tanque de ' + nomeDe(S, r.salvos[0].cor) + ' aguentou!';
     if (r.preso) msg = quem + ' caiu no buraco negro!';
@@ -373,7 +453,7 @@ const Ludo = (() => {
     }
 
     S.rolou = false; S.opcoes = []; S.validas = []; S.retro = false;
-    S.ultimo = { cor: c, i, de: op.de, para: S.pos[c][i], tipo: op.tipo, capturados: r.capturados, vacuo, libertou };
+    S.ultimo = { cor: c, i, de: op.de, para: S.pos[c][i], tipo: op.tipo, capturados: r.capturados, vacuo, libertou, preso: r.preso, eventos, poder: armado, n: ++S.jogadas };
     if (simulacao) return r;
 
     const restam = sentados(S).filter((x) => !S.vencedores.includes(x));
@@ -392,16 +472,79 @@ const Ludo = (() => {
   }
 
   function proximaVez(S) {
-    S.seis = 0; S.poderTurno = null; S.efeito = null; S.retro = false; S.semExtra = false; S.anulado = false;
+    S.seis = 0; S.poderTurno = null; S.efeito = null; S.retro = false; S.semExtra = false; S.anulado = false; S.armado = null;
     const k = CORES.indexOf(S.vez);
     for (let n = 1; n <= 4; n++) {
       const c = CORES[(k + n) % 4];
-      if (S.lugares[c] && !S.vencedores.includes(c)) { S.vez = c; return; }
+      if (S.lugares[c] && !S.vencedores.includes(c)) { S.vez = c; comecarVez(S, c); return; }
     }
+  }
+
+  /** Começo da vez do dono: a Proteção acaba e os Pontos de segurança dele perdem uma rodada. */
+  function comecarVez(S, c) {
+    if (!ehSuper(S)) return;
+    S.protegido[c] = quatro(false);
+    S.zonas.forEach((z) => { if (z.cor === c) z.rodadas--; });
+    S.zonas = S.zonas.filter((z) => z.rodadas > 0);
   }
 
   // ---------------- poderes ----------------
   const preco = (S, c, poder) => PODERES[poder].preco * Math.pow(2, S.usos[c][poder] || 0);
+  function gastarCarga(S, c, poder) {
+    S.cargas[c][poder] = Math.max(0, (S.cargas[c][poder] || 0) - 1);
+    S.usos[c][poder] = (S.usos[c][poder] || 0) + 1;
+    S.poderTurno = poder;
+    S.anuncio = { cor: c, poder, n: ++S.anuncios };
+  }
+
+  /** Opções de jogada de um poder de depois do dado. */
+  function opcoesDepois(S, c, poder) {
+    const d = S.dado;
+    if (poder === 'retroceder') return calcularOpcoes(S, c, d, true).filter((o) => o.tipo === 'retro');
+    if (poder === 'protecao') {
+      return S.pos[c].map((p, i) => ({ i, tipo: 'proteger', de: p, para: p, passos: 0, tags: [] }))
+        .filter((o) => naTrilha(o.de) && !S.protegido[c][o.i] && S.preso[c][o.i] == null);
+    }
+    if (poder === 'seguranca') return calcularOpcoes(S, c, d, false).filter((o) => (o.tipo === 'andar' || o.tipo === 'sair') && naTrilha(o.para));
+    return [];
+  }
+
+  /** Quais poderes de depois do dado dá para usar agora. */
+  function poderesDepoisDisponiveis(S, c) {
+    return PODERES_DEPOIS.filter((k) => podeUsar(S, c, k));
+  }
+
+  /** Escolhe (ou cancela, se tocar de novo) um poder de depois do dado. */
+  function armar(S, c, poder) {
+    if (S.armado === poder) return desarmar(S, c);
+    if (!podeUsar(S, c, poder)) return false;
+    S.armado = poder;
+    S.retro = poder === 'retroceder';
+    S.opcoes = opcoesDepois(S, c, poder);
+    S.validas = S.opcoes.map((o) => o.i);
+    marcarCapturas(S, c);
+    const P = PODERES[poder];
+    S.msg = nomeDe(S, c) + ' escolheu ' + P.nome + ': toque no pino.';
+    return true;
+  }
+  function desarmar(S, c) {
+    if (S.fase !== 'jogo' || S.vez !== c || !S.rolou || !S.armado) return false;
+    S.armado = null; S.retro = false;
+    S.opcoes = calcularOpcoes(S, c, S.dado, false);
+    S.validas = S.opcoes.map((o) => o.i);
+    if (S.opcoes.length) marcarCapturas(S, c);
+    S.msg = nomeDe(S, c) + ' tirou ' + S.dado + '. Escolha um pino.';
+    return true;
+  }
+
+  /** Passar a vez quando nenhum pino anda para frente (mesmo podendo usar um poder). */
+  function passar(S, c) {
+    if (S.fase !== 'jogo' || S.vez !== c || !S.rolou) return false;
+    if (!S.anulado && calcularOpcoes(S, c, S.dado, false).length) return false;
+    S.armado = null; S.retro = false; S.opcoes = []; S.validas = [];
+    passarSemJogada(S);
+    return true;
+  }
 
   /** Casa segura mais próxima atrás do pino (em progresso), ou null. */
   function seguraAtras(c, p) {
@@ -412,36 +555,37 @@ const Ludo = (() => {
   /** Se o poder pode ser usado agora neste pino (i pode ser undefined para poderes sem alvo). */
   function podeUsar(S, c, poder, args) {
     const P = PODERES[poder];
-    if (!P || !ehSuper(S) || S.fase !== 'jogo' || S.vez !== c || S.rolou || S.poderTurno) return false;
-    if (S.pontos[c] < preco(S, c, poder)) return false;
+    if (!P || !ehSuper(S) || S.fase !== 'jogo' || S.vez !== c || S.poderTurno) return false;
     args = args || {};
-    const i = args.i, p = Number.isInteger(i) ? S.pos[c][i] : undefined;
+    const i = args.i;
+    if (P.depois) {
+      if (!S.rolou || S.anulado || (S.cargas[c][poder] || 0) <= 0) return false;
+      const ops = opcoesDepois(S, c, poder);
+      return Number.isInteger(i) ? ops.some((o) => o.i === i) : ops.length > 0;
+    }
+    if (S.rolou) return false;
+    if (S.pontos[c] < preco(S, c, poder)) return false;
+    const p = Number.isInteger(i) ? S.pos[c][i] : undefined;
     const preso = Number.isInteger(i) && S.preso[c][i] != null;
     switch (poder) {
       case 'fuga': return Number.isInteger(i) ? p < 0 : S.pos[c].some((q) => q < 0);
-      case 'seguranca':
-        if (!Number.isInteger(i)) return S.pos[c].some((q) => naTrilha(q) && seguraAtras(c, q) !== null);
-        return naTrilha(p) && seguraAtras(c, p) !== null;
-      case 'protecao':
-        if (!Number.isInteger(i)) return S.pos[c].some((q) => naTrilha(q));
-        return naTrilha(p);
       case 'buraco': {
         if (S.buracos.some((b) => b.cor === c)) return false;
-        const ok = (q, j) => naTrilha(q) && S.preso[c][j] == null && !SEGURAS.has(casaDe(c, q)) && !S.buracos.some((b) => b.casa === casaDe(c, q));
+        const ok = (q, j) => naTrilha(q) && S.preso[c][j] == null && !seguro(S, casaDe(c, q)) && !S.buracos.some((b) => b.casa === casaDe(c, q));
         if (!Number.isInteger(i)) return S.pos[c].some(ok);
         return ok(p, i) && !preso;
       }
       case 'dadoSuper': return args.cat === undefined || !!CATEGORIAS[args.cat];
       case 'dedo': return args.n === undefined || (Number.isInteger(args.n) && args.n >= 1 && args.n <= 6);
-      case 'retroceder': return true;
       default: return false;
     }
   }
 
-  /** Usa um poder. Retorna true se deu certo. */
+  /** Usa um poder. Retorna true se deu certo. (Os de depois do dado só ficam escolhidos: o efeito vem ao tocar no pino.) */
   function usarPoder(S, c, poder, args) {
+    if (PODERES[poder] && PODERES[poder].depois) return armar(S, c, poder);
     args = args || {};
-    const precisaPino = ['fuga', 'seguranca', 'protecao', 'buraco'].includes(poder);
+    const precisaPino = ['fuga', 'buraco'].includes(poder);
     if (precisaPino && !Number.isInteger(args.i)) return false;
     if (poder === 'dadoSuper' && !CATEGORIAS[args.cat]) return false;
     if (poder === 'dedo' && !(Number.isInteger(args.n) && args.n >= 1 && args.n <= 6)) return false;
@@ -455,28 +599,20 @@ const Ludo = (() => {
     let msg = quem + ' usou ' + PODERES[poder].nome + '!';
 
     switch (poder) {
-      case 'fuga':
-        aterrissar(S, c, i, -1, 0, true, true);
+      case 'fuga': {
+        const r = aterrissar(S, c, i, -1, 0, true, true);
+        S.ultimo = { cor: c, i, de: -1, para: 0, tipo: 'sair', capturados: r.capturados, vacuo: [], libertou: false, preso: false, eventos: [], poder, n: ++S.jogadas };
         proximaVez(S);
         msg += ' Agora é a vez de ' + nomeDe(S, S.vez) + '.';
         break;
-      case 'seguranca': {
-        const p = S.pos[c][i], alvo = seguraAtras(c, p);
-        if (S.preso[c][i] != null) { S.preso[c][i] = null; removerBuracoEm(S, casaDe(c, p)); }
-        aterrissar(S, c, i, p, alvo, false, false);
-        msg += ' Pino ' + (i + 1) + ' voltou para a casa segura.';
-        break;
       }
-      case 'protecao': S.protegido[c] = i; msg += ' Pino ' + (i + 1) + ' está protegido.'; break;
       case 'buraco': S.buracos.push({ cor: c, casa: casaDe(c, S.pos[c][i]), dono: { cor: c, i } }); break;
       case 'dadoSuper': S.efeito = { tipo: 'cat', cat: args.cat }; msg += ' O dado vai cair ' + NOME_CAT[args.cat] + '.'; break;
       case 'dedo': S.efeito = { tipo: 'dedo', n: args.n }; msg += ' Escolheu o ' + args.n + '.'; break;
-      case 'retroceder': S.efeito = { tipo: 'retro' }; msg += ' O próximo dado anda para trás.'; break;
     }
     S.msg = msg;
     return true;
   }
-
   // ---------------- jogada automática (tempo esgotado) ----------------
   /** Escolhe o pino que está mais à frente entre os que podem jogar. */
   function escolhaAutomatica(S) {
@@ -490,6 +626,7 @@ const Ludo = (() => {
     onde, descrever, novoEstado, sentados, nomeDe, definirHabilidades, iniciar, reiniciar,
     passosEfetivos, calcularOpcoes, rolar, passarSemJogada, mover, proximaVez,
     preco, podeUsar, usarPoder, escolhaAutomatica, casaDe, naTrilha,
+    USOS_DEPOIS, RODADAS_ZONA, PODERES_DEPOIS, seguro, armar, desarmar, passar, poderesDepoisDisponiveis, opcoesDepois, comecarVez,
   };
 })();
 

@@ -68,7 +68,35 @@ const Pecas = (() => {
     sombra(corpo);
     const t = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 0.42, 'font-weight': 800, fill: '#fff', 'font-family': 'Nunito, sans-serif', stroke: 'rgba(0,0,0,.35)', 'stroke-width': 0.05, 'paint-order': 'stroke', y: 0.01 }, g);
     t.textContent = numero;
+    if (hab && hab !== 'normal') selo(g, hab);
     return g;
+  }
+
+  /**
+   * Selo da habilidade: um círculo escuro pequeno no canto de baixo à direita,
+   * com um símbolo (forma, não só cor). Não cobre a cor do jogador.
+   * Vácuo = vento · Laço = corrente · Corredor = raio · Tanque = ½ · Ligeiro = seta de saída
+   * Banqueiro = $ · Vingativo = ! · Blindado = escudo
+   */
+  function selo(g, hab) {
+    const s = el('g', { class: 'selo-hab', transform: 'translate(0.31 0.31)' }, g);
+    el('circle', { r: 0.19, fill: '#1d2330', stroke: '#fff', 'stroke-width': 0.035 }, s);
+    const traco = { fill: 'none', stroke: '#fff', 'stroke-width': 0.045, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+    const txt = (t, cor) => { const e = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 0.24, 'font-weight': 800, fill: cor || '#fff', 'font-family': 'Nunito, sans-serif', y: 0.01 }, s); e.textContent = t; };
+    switch (hab) {
+      case 'vacuo': el('path', Object.assign({ d: 'M-0.11,-0.07 H0.05 M-0.12,0 H0.11 M-0.1,0.07 H0.03' }, traco, { stroke: '#7fe7ff' }), s); break;
+      case 'laco':
+        el('ellipse', Object.assign({ cx: -0.05, cy: 0, rx: 0.075, ry: 0.045, transform: 'rotate(-35 -0.05 0)' }, traco, { stroke: '#f2c27a' }), s);
+        el('ellipse', Object.assign({ cx: 0.05, cy: 0, rx: 0.075, ry: 0.045, transform: 'rotate(-35 0.05 0)' }, traco, { stroke: '#f2c27a' }), s);
+        break;
+      case 'corredor': el('path', { d: 'M0.03,-0.13 L-0.07,0.02 H-0.005 L-0.03,0.13 L0.08,-0.03 H0.015 Z', fill: '#f5b700' }, s); break;
+      case 'tanque': txt('½'); break;
+      case 'ligeiro': el('path', Object.assign({ d: 'M0,0.11 V-0.09 M-0.07,-0.02 L0,-0.1 L0.07,-0.02' }, traco, { stroke: '#9cf2a8' }), s); break;
+      case 'banqueiro': txt('$', '#ffd76a'); break;
+      case 'vingativo': txt('!', '#ff8a7a'); break;
+      case 'blindado': el('path', { d: 'M0,-0.11 L0.09,-0.07 L0.08,0.03 Q0.05,0.09 0,0.12 Q-0.05,0.09 -0.08,0.03 L-0.09,-0.07 Z', fill: '#cfd6e6' }, s); break;
+    }
+    return s;
   }
 
   /** Um <svg> pequeno com o pino, para usar em botões e listas. */
@@ -78,5 +106,5 @@ const Pecas = (() => {
     return svg;
   }
 
-  return { el, desenhar, icone, NS };
+  return { el, desenhar, icone, selo, NS };
 })();

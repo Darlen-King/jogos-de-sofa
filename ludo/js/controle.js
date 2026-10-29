@@ -15,7 +15,7 @@ const Controle = (() => {
   let minhaCor = null;
   let meuNome = Comum.nomeSalvo();
   let nomeConfirmado = false;
-  let ultimaRolagem = 0, ultimoAnuncio = 0;
+  let ultimaRolagem = 0, ultimoAnuncio = 0, ultimaJogada = 0;
   let eraMinhaVez = false;
   let prazo = null, ultimoAlerta = 0;
   let escolhendo = null;   // poder esperando a escolha de um pino
@@ -84,6 +84,15 @@ const Controle = (() => {
       if (ultimoAnuncio) toast(L.nomeDe(E, E.anuncio.cor) + ' usou ' + L.PODERES[E.anuncio.poder].nome + '!');
       ultimoAnuncio = E.anuncio.n;
     }
+    // perdeu um pino (capturado ou caiu no buraco negro): vibra e avisa
+    if (E.ultimo && E.ultimo.n !== ultimaJogada) {
+      if (ultimaJogada && minhaCor) {
+        const u = E.ultimo;
+        if ((u.capturados || []).some((x) => x.cor === minhaCor)) { Comum.vibrar([300, 100, 300]); toast('Você perdeu um pino!'); }
+        else if (u.preso && u.cor === minhaCor) { Comum.vibrar([300, 100, 300]); toast('Seu pino caiu no buraco negro!'); }
+      }
+      ultimaJogada = E.ultimo.n;
+    }
     render();
   }
 
@@ -135,12 +144,13 @@ const Controle = (() => {
   function contextoGuia(aba) {
     const meu = minhaCor && E;
     const precos = meu && E.fase === 'jogo' ? Object.fromEntries(Object.keys(L.PODERES).map((k) => [k, L.preco(E, minhaCor, k)])) : null;
-    return { aba, cor: meu ? minhaCor : null, habil: meu ? E.habil[minhaCor] : null, precos };
+    return { aba, cor: meu ? minhaCor : null, habil: meu ? E.habil[minhaCor] : null, precos, cargas: meu && E.fase === 'jogo' ? E.cargas[minhaCor] : null };
   }
   $('c-ajuda').onclick = () => Guia.abrir(contextoGuia('pinos'));
   $('c-guia-sel').onclick = () => Guia.abrir(contextoGuia('pinos'));
   $('c-guia-pinos').onclick = () => Guia.abrir(contextoGuia('pinos'));
   $('c-guia-poderes').onclick = () => Guia.abrir(contextoGuia('poderes'));
+  $('c-guia-depois').onclick = () => Guia.abrir(contextoGuia('poderes'));
 
   function render() {
     $('c-ajuda').hidden = !(E && E.modo === 'super');
@@ -237,8 +247,9 @@ const Controle = (() => {
   function textoOpcao(o) {
     if (o.tipo === 'carga') return 'carrega +' + E.dado;
     if (o.tipo === 'retro') return 'volta ' + (o.de - o.para);
-    if (o.tipo === 'sair') return 'sai da base';
-    return 'anda ' + o.passos;
+    if (o.tipo === 'proteger') return 'proteger';
+    const base = o.tipo === 'sair' ? 'sai da base' : 'anda ' + o.passos;
+    return E.armado === 'seguranca' ? base + ' ★' : base;
   }
 
   function renderJogando() {
@@ -283,6 +294,10 @@ const Controle = (() => {
       st.textContent = preso ? 'Preso ' + E.preso[c][i] + '/' + L.CARGA_BURACO : L.descrever(p);
       b.appendChild(st);
       if (o) { const a = document.createElement('span'); a.className = 'anda'; a.textContent = textoOpcao(o); b.appendChild(a); }
+      // habilidade pronta / perigo no destino
+      if (o && o.perigo) { const t = document.createElement('span'); t.className = 'tag-hab perigo'; t.textContent = o.perigo; b.appendChild(t); }
+      else if (o && o.tags && o.tags.length) { const t = document.createElement('span'); t.className = 'tag-hab'; t.textContent = o.tags.join(' '); b.appendChild(t); }
+      if (o && o.tags && o.tags.some((x) => x !== '−2 laço' && x !== 'metade buraco')) b.classList.add('hab-pronta');
       if (o && o.captura && o.captura.length) { const s = document.createElement('span'); s.className = 'selo'; s.textContent = 'Captura!'; b.appendChild(s); }
       b.onclick = () => {
         if (escolhendo) { pedir({ t: 'poder', poder: escolhendo, args: { i } }); escolhendo = null; Comum.vibrar(30); render(); return; }
@@ -294,12 +309,34 @@ const Controle = (() => {
 
     $('c-guia-pinos').hidden = !sup;
 
-    // poderes
+    // poderes de depois do dado: barra com ícones e bolinhas de uso
+    $('c-depois-box').hidden = !sup;
+    if (sup) {
+      const db = $('c-depois');
+      db.innerHTML = '';
+      L.PODERES_DEPOIS.forEach((k) => {
+        const P = L.PODERES[k], restam = E.cargas[c][k];
+        const pode = L.podeUsar(E, c, k), ativo = E.armado === k && minhaVez;
+        const b = document.createElement('button');
+        b.className = 'poder-depois' + (pode && !ativo ? ' pronto' : '') + (ativo ? ' ativo' : '');
+        b.disabled = !(pode || ativo) || !!escolhendo;
+        b.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+        b.setAttribute('aria-label', P.nome + ', ' + restam + ' de ' + L.USOS_DEPOIS + ' usos');
+        b.innerHTML = `<img src="img/${P.icone}_128.png" alt=""><b>${P.nome}</b><span class="bolinhas">${Array.from({ length: L.USOS_DEPOIS }, (_, n) => `<i class="${n < restam ? '' : 'usada'}"></i>`).join('')}</span>`;
+        b.onclick = () => { pedir({ t: 'poder', poder: k, args: {} }); Comum.vibrar(20); };
+        db.appendChild(b);
+      });
+      $('c-depois-dica').textContent = E.armado && minhaVez
+        ? L.PODERES[E.armado].nome + ': toque no pino. Toque de novo no poder para cancelar.'
+        : 'Depois de girar o dado. 1 poder por vez, 2 usos de cada por partida.';
+    }
+
+    // poderes de antes do dado (pagos com pontos)
     $('c-poderes-box').hidden = !sup;
     if (sup) {
       const pb = $('c-poderes');
       pb.innerHTML = '';
-      Object.entries(L.PODERES).forEach(([k, P]) => {
+      Object.entries(L.PODERES).filter(([, P]) => !P.depois).forEach(([k, P]) => {
         const b = document.createElement('button');
         b.className = 'poder';
         b.disabled = !L.podeUsar(E, c, k) || !!escolhendo;

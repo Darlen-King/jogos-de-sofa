@@ -69,10 +69,14 @@ const Guia = (() => {
       const sinais = document.createElement('ul');
       sinais.className = 'guia-sinais';
       sinais.innerHTML = [
+        '<b>Selo no canto do pino</b>: a habilidade dele (vento = Vácuo, corrente = Laço, raio = Corredor, ½ = Tanque, seta = Ligeiro, $ = Banqueiro, ! = Vingativo, escudo = Blindado). Quando o selo pulsa, a habilidade vai funcionar com o dado que saiu.',
+        '<b>Etiqueta amarela no destino</b>: o que a habilidade vai fazer ("+2", "metade", "−2 laço").',
         '<b>♥</b> no pino: o Tanque ainda tem a vida extra.',
-        '<b>Anel azul</b> em volta: pino com Proteção máxima.',
-        '<b>4/10</b> embaixo do pino: preso no buraco negro (quanto já juntou para sair).',
-        '<b>Casa roxa escura</b>: buraco negro.',
+        '<b>Bolha azul</b> em volta: pino com Proteção máxima (até a próxima vez do dono).',
+        '<b>Estrela dourada com anel girando</b>: Ponto de segurança. O número diz quantas rodadas faltam.',
+        '<b>Cadeado e 4/10</b>: pino preso no buraco negro (quanto já juntou para sair).',
+        '<b>Redemoinho escuro</b>: buraco negro. <b>Casas roxas com ½</b> ao lado: quem sai delas anda metade.',
+        '<b>Destino vermelho "buraco!"</b>: se escolher esse pino, ele cai no buraco negro.',
         '<b>Mira vermelha</b>: pino que pode ser capturado com o dado que saiu.',
         '<b>Dois pinos da mesma cor juntos</b>: ninguém captura (bloqueio).',
       ].map((t) => '<li>' + t + '</li>').join('');
@@ -80,9 +84,17 @@ const Guia = (() => {
     } else {
       const aviso = document.createElement('p');
       aviso.className = 'guia-nota';
-      aviso.textContent = 'Você ganha pontos andando (1 por casa nova), capturando (10) e levando um pino ao fim (50). Pode usar 1 poder por turno, antes de girar o dado. Cada vez que usa um poder, o preço dele dobra para você.';
+      aviso.textContent = 'Pode usar 1 poder por turno. Os poderes de depois do dado (Retroceder, Proteção máxima e Ponto de segurança) não custam pontos: cada um pode ser usado 2 vezes por partida (as bolinhas). Gire o dado, toque no poder e depois no pino; tocar de novo no poder cancela. Os de antes do dado custam pontos — você ganha andando (1 por casa nova), capturando (10) e levando um pino ao fim (50) — e o preço dobra a cada uso.';
       corpo.appendChild(aviso);
-      Object.entries(L.PODERES).forEach(([k, P]) => {
+      corpo.appendChild(titulo('Depois de girar o dado'));
+      Object.entries(L.PODERES).filter(([, P]) => P.depois).forEach(([k, P]) => {
+        const resta = ctx.cargas && ctx.cargas[k] != null ? 'restam ' + ctx.cargas[k] + ' de ' + L.USOS_DEPOIS : L.USOS_DEPOIS + ' usos por partida';
+        const img = document.createElement('img');
+        img.src = 'img/' + P.icone + '_128.png'; img.alt = ''; img.width = 52; img.height = 52;
+        corpo.appendChild(cartao(img, P.nome, P.desc, P.detalhe, null, resta));
+      });
+      corpo.appendChild(titulo('Antes de girar o dado'));
+      Object.entries(L.PODERES).filter(([, P]) => !P.depois).forEach(([k, P]) => {
         const agora = ctx.precos && ctx.precos[k] != null ? 'agora custa ' + ctx.precos[k] + ' pts' : 'começa em ' + P.preco + ' pts';
         corpo.appendChild(cartao(null, P.nome, P.desc, P.detalhe, null, agora));
       });
